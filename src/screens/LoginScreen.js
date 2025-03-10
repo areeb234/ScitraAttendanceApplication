@@ -18,7 +18,7 @@ const LoginScreen = () => {
     if (email) {
       try {
         const response = await fetch(
-          'https://script.google.com/macros/s/AKfycby1YPhTL5W2oGxaiajszcbRdlksbyQXrjqYK605PffOTgzbQawNO1asB4vohKT1AbbQ_A/exec',
+          'https://script.google.com/macros/s/AKfycbw1GzlR2B3RO-dLrgJGjwVYU8FdBdqMKfsXo0_rHLG8PrhEqV6nB9F3OJFVIeberi7Rqw/exec',
           {
             method: 'POST',
             headers: {
@@ -28,9 +28,12 @@ const LoginScreen = () => {
           },
         );
 
-        if (response.ok) {
+        const text = await response.text();
+        if (response.ok && text === 'OTP sent') {
           Alert.alert('Code Sent', `A code has been sent to ${email}`);
           navigation.navigate('OTPScreen', {email});
+        } else if (text === 'Unauthorized') {
+          Alert.alert('Error', 'Email not found in the system');
         } else {
           Alert.alert('Error', 'Failed to send OTP');
         }

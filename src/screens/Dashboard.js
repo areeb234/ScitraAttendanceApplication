@@ -9,7 +9,7 @@ const Dashboard = ({route, navigation}) => {
     if (otp) {
       try {
         const response = await fetch(
-          'https://script.google.com/macros/s/AKfycby1YPhTL5W2oGxaiajszcbRdlksbyQXrjqYK605PffOTgzbQawNO1asB4vohKT1AbbQ_A/exec',
+          'https://script.google.com/macros/s/AKfycbw1GzlR2B3RO-dLrgJGjwVYU8FdBdqMKfsXo0_rHLG8PrhEqV6nB9F3OJFVIeberi7Rqw/exec',
           {
             method: 'POST',
             headers: {

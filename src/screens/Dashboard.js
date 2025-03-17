@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DashboardScreen = ({ route }) => {
-  const { email } = route.params;
+const DashboardScreen = ({ navigation }) => {
+  const [email, setEmail] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const data = [
     { id: '1', name: 'Item 1', status: 'Active' },
@@ -10,7 +12,23 @@ const DashboardScreen = ({ route }) => {
     { id: '3', name: 'Item 3', status: 'Pending' },
   ];
 
-  const [modalVisible, setModalVisible] = useState(false);
+  useEffect(() => {
+    const getEmail = async () => {
+      const storedEmail = await AsyncStorage.getItem('userEmail');
+      if (storedEmail) {
+        setEmail(storedEmail);
+      }
+    };
+    getEmail();
+  }, []);
+
+  if (!email) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

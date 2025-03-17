@@ -34,7 +34,8 @@ const Dashboard = ({route, navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Enter OTP</Text>
+      <Text style={styles.title}>Welcome {email}</Text>
+      <Text style={styles.title}>Al-Batha Business</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter OTP"

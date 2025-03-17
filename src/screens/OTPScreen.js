@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button, Alert, StyleSheet} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OTPScreen = ({route, navigation}) => {
   const [otp, setOtp] = useState('');
@@ -20,6 +21,7 @@ const OTPScreen = ({route, navigation}) => {
         );
 
         if (response.ok) {
+          await AsyncStorage.setItem('userEmail', email); // Save email
           Alert.alert('OTP Verified', 'You have successfully logged in!');
           navigation.navigate('Dashboard', {email});
         } else {

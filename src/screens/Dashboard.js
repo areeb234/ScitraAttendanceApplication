@@ -1,50 +1,78 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, Button, Alert, StyleSheet} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Dashboard = ({route, navigation}) => {
-  const [otp, setOtp] = useState('');
-  const {email} = route.params;
+const DashboardScreen = ({navigation}) => {
+  const [email, setEmail] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const verifyOtp = async () => {
-    if (otp) {
-      try {
-        const response = await fetch(
-          'https://script.google.com/macros/s/AKfycbw1GzlR2B3RO-dLrgJGjwVYU8FdBdqMKfsXo0_rHLG8PrhEqV6nB9F3OJFVIeberi7Rqw/exec',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({action: 'verify-otp', email, otp}),
-          },
-        );
+  const data = [
+    {id: '1', name: 'Item 1', status: 'Active'},
+    {id: '2', name: 'Item 2', status: 'Inactive'},
+    {id: '3', name: 'Item 3', status: 'Pending'},
+  ];
 
-        if (response.ok) {
-          Alert.alert('OTP Verified', 'You have successfully logged in!');
-        } else {
-          Alert.alert('Invalid OTP', 'Please enter the correct OTP.');
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to verify OTP');
+  useEffect(() => {
+    const getEmail = async () => {
+      const storedEmail = await AsyncStorage.getItem('userEmail');
+      if (storedEmail) {
+        setEmail(storedEmail);
       }
-    } else {
-      Alert.alert('Invalid OTP', 'Please enter the OTP sent to your email.');
-    }
-  };
+    };
+    getEmail();
+  }, []);
+
+  if (!email) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome {email}</Text>
-      <Text style={styles.title}>Al-Batha Business</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter OTP"
-        value={otp}
-        onChangeText={setOtp}
-        keyboardType="numeric"
-        autoCapitalize="none"
+      <View style={styles.header}>
+        <Text style={styles.welcomeText}>Welcome, {email}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.plusButton}
+        onPress={() => setModalVisible(true)}>
+        <Text style={styles.plusText}>+</Text>
+      </TouchableOpacity>
+      <FlatList
+        data={data}
+        keyExtractor={item => item.id}
+        renderItem={({item}) => (
+          <View style={styles.row}>
+            <Text style={styles.cell}>{item.name}</Text>
+            <Text style={styles.cell}>{item.status}</Text>
+          </View>
+        )}
       />
-      <Button title="Verify OTP" onPress={verifyOtp} />
+
+      {/* Modal Pop-up */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>This is a pop-up!</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeButton}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -52,23 +80,77 @@ const Dashboard = ({route, navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#f0f0f0',
     padding: 20,
   },
-  title: {
+  header: {
+    backgroundColor: 'white',
+    flexDirection: 'row', // This will arrange items horizontally
+    justifyContent: 'space-between', // Distributes space between the items
+    alignItems: 'center', // Vertically centers the items
+    padding: 15,
+    marginBottom: 20, // Make it relative so we can position the button
+    borderWidth: 1, // Add border on all sides
+    borderColor: 'black', // Set the border color
+    borderRadius: 5, // Optional: rounded corners
+  },
+  welcomeText: {
+    color: 'black',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  plusButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ff5733',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  plusText: {
+    color: 'white',
     fontSize: 24,
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    backgroundColor: 'white',
+    marginBottom: 5,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: {width: 0, height: 1},
+  },
+  cell: {
+    fontSize: 16,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
     marginBottom: 20,
   },
-  input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
+  closeButton: {
+    color: '#007bff',
+    fontSize: 16,
   },
 });
 
-export default Dashboard;
+export default DashboardScreen;

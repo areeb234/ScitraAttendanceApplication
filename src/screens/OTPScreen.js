@@ -6,7 +6,6 @@ const OTPScreen = ({route, navigation}) => {
   const [otp, setOtp] = useState('');
   const {email} = route.params;
 
-
   const verifyOtp = async () => {
     if (otp) {
       try {

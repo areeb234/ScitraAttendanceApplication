@@ -108,7 +108,34 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
+  },
 
+  deleteButton: {
+    backgroundColor: 'red',
+    color: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    textAlign: 'center',
+  },
+
+  closeButtonRight: {
+    backgroundColor: '#ccc',
+    color: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    textAlign: 'center',
+  },
+  addButton: {
+    backgroundColor: 'green',
+    color: 'white',
+  },
 });
 
 export default styles;

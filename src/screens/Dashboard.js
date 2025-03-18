@@ -3,14 +3,12 @@ import { View, Text, FlatList, TouchableOpacity, Modal, TextInput } from 'react-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/dashboardstyles';
 
-const DashboardScreen = ({ navigation }) => {
+const DashboardScreen = () => {
   const [email, setEmail] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [data, setData] = useState([
-    { id: '1', name: 'MEPP',  startDate: '2025-03-18', endDate: '2025-04-18' },
-    { id: '2', name: 'Egypt',  startDate: '2025-02-10', endDate: '2025-03-10' },
   ]);
 
 
@@ -19,13 +17,50 @@ const DashboardScreen = ({ navigation }) => {
 
   useEffect(() => {
     const getEmail = async () => {
-      const storedEmail = await AsyncStorage.getItem('userEmail');
-      if (storedEmail) {
-        setEmail(storedEmail);
+      try {
+        const storedEmail = await AsyncStorage.getItem('userEmail');
+        if (storedEmail) {
+          setEmail(storedEmail);
+          fetchAttendanceLogs(storedEmail);
+        } else {
+          console.warn('No email found in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error fetching email from AsyncStorage:', error);
       }
     };
     getEmail();
   }, []);
+
+  const fetchAttendanceLogs = async (userEmail) => {
+    try {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'fetchLogs', email: userEmail })
+      });
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        // Map the response data to match the format of your state data
+        const transformedData = result.logs.map(item => ({
+          id: item.logID.toString(), // Convert logID to string
+          name: item.site,
+          startDate: item.fromDate ? new Date(item.fromDate).toLocaleDateString() : 'Invalid Date', // Check if fromDate exists and format correctly
+          endDate: item.toDate ? new Date(item.toDate).toLocaleDateString() : 'Invalid Date' // Check if toDate exists and format correctly
+        }));
+        setData(transformedData); // Update state with transformed data
+      } else {
+        console.error('Error fetching logs:', result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  useEffect(() => {
+    console.log('Updated Data:', data);  // Log data whenever it changes
+  }, [data]); // This will run every time `data` changes
+
 
   const openModal = (item) => {
     setSelectedItem(item);
@@ -74,15 +109,16 @@ const DashboardScreen = ({ navigation }) => {
         {/* Table Data */}
         <FlatList
           data={data}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.tableRow} onPress={() => openModal(item)}>
-              <Text style={styles.cell}>{item.name}</Text>
-              <Text style={styles.cell}>{item.startDate || 'N/A'}</Text>
-              <Text style={styles.cell}>{item.endDate || 'N/A'}</Text>
+              <Text style={styles.cell}>{item.name}</Text> {/* Updated to item.name */}
+              <Text style={styles.cell}>{item.startDate}</Text> {/* Updated to item.startDate */}
+              <Text style={styles.cell}>{item.endDate}</Text> {/* Updated to item.endDate */}
             </TouchableOpacity>
           )}
         />
+
       </View>
 
 
@@ -103,15 +139,18 @@ const DashboardScreen = ({ navigation }) => {
                 <Text style={styles.modalText}>End Date: {selectedItem.endDate}</Text>
               </>
             )}
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={styles.closeButton}>Close</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={styles.closeButton}>Delete</Text>
-            </TouchableOpacity>
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={[styles.closeButton, styles.deleteButton]}>Delete</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={[styles.closeButton, styles.closeButtonRight]}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
+
 
       {/* Modal for Adding New Data */}
       <Modal
@@ -135,15 +174,20 @@ const DashboardScreen = ({ navigation }) => {
               value={newStatus}
               onChangeText={setNewStatus}
             />
-            <TouchableOpacity onPress={addNewItem}>
-              <Text style={styles.addButton}>Add</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsAddModalVisible(false)}>
-              <Text style={styles.closeButton}>Close</Text>
-            </TouchableOpacity>
+
+            {/* Button Row */}
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity onPress={addNewItem}>
+                <Text style={[styles.modalButton, styles.addButton]}>Add</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setIsAddModalVisible(false)}>
+                <Text style={[styles.modalButton, styles.closeButtonRight]}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
+
 
     </View>
   );

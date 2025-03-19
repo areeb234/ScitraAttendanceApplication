@@ -6,6 +6,7 @@ import styles from '../../styles/dashboardstyles';
 const DashboardScreen = () => {
   const [email, setEmail] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [username, setUsername] = useState(null);  // Add state for username
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [data, setData] = useState([
@@ -16,20 +17,24 @@ const DashboardScreen = () => {
   const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
-    const getEmail = async () => {
+    const getUserData = async () => {
       try {
         const storedEmail = await AsyncStorage.getItem('userEmail');
+        const storedUsername = await AsyncStorage.getItem('username');
+
         if (storedEmail) {
           setEmail(storedEmail);
+          setUsername(storedUsername || 'Guest'); // Default if username is not found
           fetchAttendanceLogs(storedEmail);
         } else {
           console.warn('No email found in AsyncStorage');
         }
       } catch (error) {
-        console.error('Error fetching email from AsyncStorage:', error);
+        console.error('Error fetching data from AsyncStorage:', error);
       }
     };
-    getEmail();
+
+    getUserData();
   }, []);
 
   const fetchAttendanceLogs = async (userEmail) => {
@@ -40,8 +45,12 @@ const DashboardScreen = () => {
         body: JSON.stringify({ action: 'fetchLogs', email: userEmail })
       });
       const result = await response.json();
-
+      console.log(result)
       if (result.status === 'success') {
+        const userNameFromResponse = result.logs[0]?.Name;
+        if (userNameFromResponse) {
+          setUsername(userNameFromResponse);  // Set the username
+        }
         // Map the response data to match the format of your state data
         const transformedData = result.logs.map(item => ({
           id: item.logID.toString(), // Convert logID to string
@@ -76,7 +85,7 @@ const DashboardScreen = () => {
     }
   };
 
-  if (!email) {
+  if (!username) {
     return (
       <View style={styles.container}>
         <Text>Loading...</Text>
@@ -87,7 +96,7 @@ const DashboardScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome, {email}</Text>
+        <Text style={styles.welcomeText}>Welcome,{username}</Text>
       </View>
 
       {/* Plus Button to Open Add Data Modal */}
@@ -96,6 +105,10 @@ const DashboardScreen = () => {
         onPress={() => setIsAddModalVisible(true)}
       >
         <Text style={styles.plusText}>+</Text>
+
+      </TouchableOpacity>
+      <TouchableOpacity onPress={clearAsyncStorage}>
+        <Text>Clear AsyncStorage</Text>
       </TouchableOpacity>
 
       <View style={styles.tableContainer}>
@@ -193,4 +206,13 @@ const DashboardScreen = () => {
   );
 };
 
+
+const clearAsyncStorage = async () => {
+  try {
+    await AsyncStorage.clear();
+    console.log('AsyncStorage cleared!');
+  } catch (error) {
+    console.error('Error clearing AsyncStorage:', error);
+  }
+};
 export default DashboardScreen;

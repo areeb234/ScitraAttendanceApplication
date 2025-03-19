@@ -5,60 +5,88 @@ import {
   TextInput,
   Button,
   Alert,
+  ActivityIndicator,
   StyleSheet,
-  Image,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 
-const LoginScreen = () => {
+const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
-  const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
 
-  const sendCode = async () => {
-    if (email) {
-      try {
-        const response = await fetch(
-          'https://script.google.com/macros/s/AKfycbw1GzlR2B3RO-dLrgJGjwVYU8FdBdqMKfsXo0_rHLG8PrhEqV6nB9F3OJFVIeberi7Rqw/exec',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({action: 'send-otp', email}),
+  const validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleLogin = async () => {
+    if (!email.trim()) {
+      Alert.alert('Validation Error', 'Email cannot be empty.');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Validation Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('🚀 Sending login request to API...');
+
+      const response = await fetch(
+        'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        );
+          body: JSON.stringify({
+            action: 'login',
+            email: email,
+          }),
+        },
+      );
 
-        const text = await response.text();
-        if (response.ok && text === 'OTP sent') {
-          Alert.alert('Code Sent', `A code has been sent to ${email}`);
-          navigation.navigate('OTPScreen', {email});
-        } else if (text === 'Unauthorized') {
-          Alert.alert('Error', 'Email not found in the system');
-        } else {
-          Alert.alert('Error', 'Failed to send OTP');
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to send OTP');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    } else {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+
+      const responseData = await response.json();
+      console.log('✅ API Response:', responseData);
+
+      if (responseData.status === 'success') {
+        Alert.alert('Success', 'OTP sent to your email.');
+        navigation.navigate('OTPVerification', {
+          email,
+          username: responseData.user, // Pass the username
+        });
+      } else {
+        Alert.alert('Error', responseData.message || 'Login failed.');
+        console.error('❌ API Request Failed:', responseData.message);
+      }
+    } catch (error) {
+      console.error('❌ API Request Failed:', error.message);
+      Alert.alert('Error', `Something went wrong: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Al-Batha Business Trip Attendance System</Text>
-      <Image source={require('./Images/download.jpg')} style={styles.image} />
-      <Text style={styles.title}>Please Enter Your Email!</Text>
+      <Text style={styles.label}>Enter your Email:</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter your email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <Button title="Send Code" onPress={sendCode} />
+      {loading ? (
+        <ActivityIndicator size="large" color="#007bff" />
+      ) : (
+        <Button title="Login" onPress={handleLogin} />
+      )}
     </View>
   );
 };
@@ -68,25 +96,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
+  label: {
+    fontSize: 18,
+    marginBottom: 10,
   },
   input: {
     width: '100%',
     padding: 10,
-    marginBottom: 20,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 4,
+    borderRadius: 5,
+    marginBottom: 15,
   },
 });
 

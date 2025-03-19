@@ -1,31 +1,36 @@
-import 'react-native-gesture-handler';
-import React, {useEffect, useState} from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ActivityIndicator, View} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './src/screens/LoginScreen';
-import OTPScreen from './src/screens/OTPScreen';
-import Dashboard from './src/screens/Dashboard';
+import OTPVerificationScreen from './src/screens/OTPScreen';
+import UserDashboard from './src/screens/Dashboard';
+import AdminDashboard from './src/screens/AdminDashboard';
+import { View, ActivityIndicator } from 'react-native';
 
 const Stack = createStackNavigator();
 
 const App = () => {
-  const [initialRoute, setInitialRoute] = useState(null);
+  const [initialRoute, setInitialRoute] = useState(null); // Default null to avoid premature render
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      const savedEmail = await AsyncStorage.getItem('userEmail');
-      setInitialRoute(savedEmail ? 'Dashboard' : 'LoginScreen');
+      try {
+        const savedEmail = await AsyncStorage.getItem('userEmail');
+        console.log("Saved Email:", savedEmail); // Debugging log
+        setInitialRoute(savedEmail ? 'UserDashboard' : 'Login');
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        setInitialRoute('Login'); // Fallback
+      }
     };
-
     checkLoginStatus();
   }, []);
 
+  // 🔹 Wait until `initialRoute` is determined before rendering the navigator
   if (initialRoute === null) {
-    // Show loading screen while checking AsyncStorage
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
@@ -34,9 +39,10 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={initialRoute}>
-        <Stack.Screen name="LoginScreen" component={LoginScreen} />
-        <Stack.Screen name="OTPScreen" component={OTPScreen} />
-        <Stack.Screen name="Dashboard" component={Dashboard} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
+        <Stack.Screen name="UserDashboard" component={UserDashboard} />
+        <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
       </Stack.Navigator>
     </NavigationContainer>
   );

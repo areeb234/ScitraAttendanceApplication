@@ -17,6 +17,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
   },
+
   tableContainer: {
     marginTop: 20,
     borderWidth: 1,
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: 'white',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     padding: 15,
     marginBottom: 20,
@@ -70,28 +71,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
   },
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContainer: {
-    width: 300,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  modalText: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  closeButton: {
-    color: '#007bff',
-    fontSize: 16,
-    marginTop: 10,
-  },
+
   plusButton: {
     position: 'absolute',
     top: 10,
@@ -108,12 +88,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  modalButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 20,
-  },
+
 
   deleteButton: {
     backgroundColor: 'red',
@@ -132,10 +107,62 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     textAlign: 'center',
   },
+
+
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    maxHeight: '80%', // Ensure modal content doesn't overflow
+  },
+
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    marginBottom: 15,
+    paddingLeft: 8,
+    borderRadius: 5,
+    width: '100%', // Ensure input takes full width
+  },
+
+  picker: {
+    height: 40, // Add height to Picker to prevent overflow
+    marginBottom: 15, // Ensure space after Picker
+  },
+
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20, // Ensure there's enough space at the bottom
+  },
+
+  modalButton: {
+    padding: 10,
+    borderRadius: 5,
+    width: '48%', // Ensure buttons are not too wide
+  },
+
   addButton: {
     backgroundColor: 'green',
-    color: 'white',
   },
+
+  closeButton: {
+    backgroundColor: 'red',
+  },
+
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+  },
+
 });
 
 export default styles;

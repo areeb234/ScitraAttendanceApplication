@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/dashboardstyles';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker'; // Update the import
+
 
 const DashboardScreen = () => {
   const [email, setEmail] = useState(null);
@@ -9,12 +12,36 @@ const DashboardScreen = () => {
   const [username, setUsername] = useState(null);  // Add state for username
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [data, setData] = useState([
-  ]);
-
-
+  const [data, setData] = useState([]);
   const [newName, setNewName] = useState('');
   const [newStatus, setNewStatus] = useState('');
+
+
+  /*Add Popup*/
+  const [selectedSite, setSelectedSite] = useState(''); // Initialize selectedSite with an empty string or a default value
+  const [dateFrom, setDateFrom] = useState(new Date()); // Initialize with current date
+  const [dateTo, setDateTo] = useState(new Date()); // Initialize with current date
+  const [showDateFrom, setShowDateFrom] = useState(false);
+  const [showDateTo, setShowDateTo] = useState(false);
+  const onChangeDateFrom = (event, selectedDate) => {
+    setShowDateFrom(false);
+    setDateFrom(selectedDate || dateFrom);
+  };
+  const onChangeDateTo = (event, selectedDate) => {
+    setShowDateTo(false);
+    setDateTo(selectedDate || dateTo);
+  };
+  const [isPickerVisible, setIsPickerVisible] = useState(false); // Track Picker visibility
+  const handlePickerClick = () => {
+    setIsPickerVisible(true); // Toggle the picker visibility when the field is clicked
+  };
+  const handlePickerValueChange = (value) => {
+    setSelectedSite(value);
+    setIsPickerVisible(false); // Hide the picker once a value is selected
+  };
+  /*Add Popup*/
+
+
 
   useEffect(() => {
     const getUserData = async () => {
@@ -66,6 +93,7 @@ const DashboardScreen = () => {
       console.error('Error:', error);
     }
   };
+
   useEffect(() => {
     console.log('Updated Data:', data);  // Log data whenever it changes
   }, [data]); // This will run every time `data` changes
@@ -96,10 +124,9 @@ const DashboardScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome,{username}</Text>
+        <Text style={styles.welcomeText}>Welcome, {username}</Text>
       </View>
 
-      {/* Plus Button to Open Add Data Modal */}
       <TouchableOpacity
         style={styles.plusButton}
         onPress={() => setIsAddModalVisible(true)}
@@ -175,32 +202,78 @@ const DashboardScreen = () => {
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalText}>Add New Item</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Name"
-              value={newName}
-              onChangeText={setNewName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Status"
-              value={newStatus}
-              onChangeText={setNewStatus}
-            />
+
+            {/* Dropdown for Sites */}
+            <TouchableOpacity onPress={handlePickerClick}>
+              <TextInput
+                style={styles.input}
+                placeholder="Select Site"
+                value={selectedSite}
+                editable={false}
+              />
+            </TouchableOpacity>
+            {isPickerVisible && (
+              <Picker
+                selectedValue={selectedSite}
+                style={styles.picker}
+                onValueChange={handlePickerValueChange}
+              >
+                <Picker.Item label="Select Site" value="" />
+                <Picker.Item label="Site 1" value="site1" />
+                <Picker.Item label="Site 2" value="site2" />
+                <Picker.Item label="Site 3" value="site3" />
+                {/* Add more sites as needed */}
+              </Picker>
+            )}
+
+            {/* Date From */}
+            <TouchableOpacity onPress={() => setShowDateFrom(true)}>
+              <TextInput
+                style={styles.input}
+                placeholder="Select Date From"
+                value={dateFrom ? dateFrom.toLocaleDateString() : ''}
+                editable={false}
+              />
+            </TouchableOpacity>
+            {showDateFrom && (
+              <DateTimePicker
+                value={dateFrom}
+                mode="date"
+                display="default"
+                onChange={onChangeDateFrom}
+              />
+            )}
+
+            {/* Date To */}
+            <TouchableOpacity onPress={() => setShowDateTo(true)}>
+              <TextInput
+                style={styles.input}
+                placeholder="Select Date To"
+                value={dateTo ? dateTo.toLocaleDateString() : ''}
+                editable={false}
+              />
+            </TouchableOpacity>
+            {showDateTo && (
+              <DateTimePicker
+                value={dateTo}
+                mode="date"
+                display="default"
+                onChange={onChangeDateTo}
+              />
+            )}
 
             {/* Button Row */}
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity onPress={addNewItem}>
-                <Text style={[styles.modalButton, styles.addButton]}>Add</Text>
+              <TouchableOpacity onPress={addNewItem} style={[styles.modalButton, styles.addButton]}>
+                <Text style={styles.buttonText}>Add</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setIsAddModalVisible(false)}>
-                <Text style={[styles.modalButton, styles.closeButtonRight]}>Close</Text>
+              <TouchableOpacity onPress={() => setIsAddModalVisible(false)} style={[styles.modalButton, styles.closeButton]}>
+                <Text style={styles.buttonText}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-
 
     </View>
   );

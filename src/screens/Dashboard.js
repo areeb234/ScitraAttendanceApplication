@@ -10,35 +10,20 @@ const DashboardScreen = () => {
   const [email, setEmail] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [username, setUsername] = useState(null);  // Add state for username
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [data, setData] = useState([]);
   const [newName, setNewName] = useState('');
   const [newStatus, setNewStatus] = useState('');
-
-
   /*Add Popup*/
-  const [selectedSite, setSelectedSite] = useState(''); // Initialize selectedSite with an empty string or a default value
-  const [dateFrom, setDateFrom] = useState(new Date()); // Initialize with current date
-  const [dateTo, setDateTo] = useState(new Date()); // Initialize with current date
-  const [showDateFrom, setShowDateFrom] = useState(false);
-  const [showDateTo, setShowDateTo] = useState(false);
-  const onChangeDateFrom = (event, selectedDate) => {
-    setShowDateFrom(false);
-    setDateFrom(selectedDate || dateFrom);
-  };
-  const onChangeDateTo = (event, selectedDate) => {
-    setShowDateTo(false);
-    setDateTo(selectedDate || dateTo);
-  };
-  const [isPickerVisible, setIsPickerVisible] = useState(false); // Track Picker visibility
-  const handlePickerClick = () => {
-    setIsPickerVisible(true); // Toggle the picker visibility when the field is clicked
-  };
-  const handlePickerValueChange = (value) => {
-    setSelectedSite(value);
-    setIsPickerVisible(false); // Hide the picker once a value is selected
-  };
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [newSite, setNewSite] = useState('');
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const siteOptions = ["Site A", "Site B", "Site C", "Site D"];
+  const [showPicker, setShowPicker] = useState(false);
+
   /*Add Popup*/
 
 
@@ -161,8 +146,6 @@ const DashboardScreen = () => {
 
       </View>
 
-
-
       {/* Modal for Viewing Item Details */}
       <Modal
         animationType="slide"
@@ -191,84 +174,79 @@ const DashboardScreen = () => {
         </View>
       </Modal>
 
-
-      {/* Modal for Adding New Data */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isAddModalVisible}
-        onRequestClose={() => setIsAddModalVisible(false)}
-      >
+      {/* Add Data Modal */}
+      <Modal visible={isAddModalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>Add New Item</Text>
+            <Text style={styles.modalTitle}>Add New Entry</Text>
 
-            {/* Dropdown for Sites */}
-            <TouchableOpacity onPress={handlePickerClick}>
-              <TextInput
-                style={styles.input}
-                placeholder="Select Site"
-                value={selectedSite}
-                editable={false}
-              />
+            {/* Site Dropdown */}
+            <TouchableOpacity
+              style={styles.dropdownTrigger}
+              onPress={() => setShowPicker(!showPicker)}
+            >
+              <Text style={styles.dropdownText}>
+                {newSite ? newSite : "Select Site"}
+              </Text>
             </TouchableOpacity>
-            {isPickerVisible && (
-              <Picker
-                selectedValue={selectedSite}
-                style={styles.picker}
-                onValueChange={handlePickerValueChange}
-              >
-                <Picker.Item label="Select Site" value="" />
-                <Picker.Item label="Site 1" value="site1" />
-                <Picker.Item label="Site 2" value="site2" />
-                <Picker.Item label="Site 3" value="site3" />
-                {/* Add more sites as needed */}
-              </Picker>
+
+            {showPicker && (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={newSite}
+                  onValueChange={(itemValue) => {
+                    setNewSite(itemValue);
+                    setShowPicker(false);
+                  }}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Select Site" value="" />
+                  {siteOptions.map((site, index) => (
+                    <Picker.Item key={index} label={site} value={site} />
+                  ))}
+                </Picker>
+              </View>
             )}
 
-            {/* Date From */}
-            <TouchableOpacity onPress={() => setShowDateFrom(true)}>
-              <TextInput
-                style={styles.input}
-                placeholder="Select Date From"
-                value={dateFrom ? dateFrom.toLocaleDateString() : ''}
-                editable={false}
-              />
+            {/* Start Date Picker */}
+            <TouchableOpacity style={styles.dateInput} onPress={() => setShowStartPicker(true)}>
+              <Text style={styles.dateText}>Start Date: {startDate.toLocaleDateString()}</Text>
             </TouchableOpacity>
-            {showDateFrom && (
+            {showStartPicker && (
               <DateTimePicker
-                value={dateFrom}
+                value={startDate}
                 mode="date"
                 display="default"
-                onChange={onChangeDateFrom}
+                onChange={(event, selectedDate) => {
+                  setShowStartPicker(false);
+                  if (selectedDate) setStartDate(selectedDate);
+                }}
               />
             )}
 
-            {/* Date To */}
-            <TouchableOpacity onPress={() => setShowDateTo(true)}>
-              <TextInput
-                style={styles.input}
-                placeholder="Select Date To"
-                value={dateTo ? dateTo.toLocaleDateString() : ''}
-                editable={false}
-              />
+            {/* End Date Picker */}
+            <TouchableOpacity style={styles.dateInput} onPress={() => setShowEndPicker(true)}>
+              <Text style={styles.dateText}>End Date: {endDate.toLocaleDateString()}</Text>
             </TouchableOpacity>
-            {showDateTo && (
+            {showEndPicker && (
               <DateTimePicker
-                value={dateTo}
+                value={endDate}
                 mode="date"
                 display="default"
-                onChange={onChangeDateTo}
+                onChange={(event, selectedDate) => {
+                  setShowEndPicker(false);
+                  if (selectedDate) setEndDate(selectedDate);
+                }}
               />
             )}
 
-            {/* Button Row */}
+            {/* Buttons */}
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity onPress={addNewItem} style={[styles.modalButton, styles.addButton]}>
-                <Text style={styles.buttonText}>Add</Text>
+              <TouchableOpacity onPress={() => setIsAddModalVisible(false)}>
+                <Text style={[styles.closeButton, styles.closeButtonLeft]}>Close</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setIsAddModalVisible(false)} style={[styles.modalButton, styles.closeButton]}>
-                <Text style={styles.buttonText}>Close</Text>
+              <TouchableOpacity onPress={addNewItem}>
+                <Text style={[styles.closeButton, styles.addButton]}>Add</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Modal, TextInput } from 'react-native';
+import {View, Text, FlatList, TouchableOpacity, Modal, TextInput, ActivityIndicator} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/dashboardstyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // Update the import
 
+const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
 
 const DashboardScreen = () => {
   const [email, setEmail] = useState(null);
@@ -16,15 +17,57 @@ const DashboardScreen = () => {
   const [newStatus, setNewStatus] = useState('');
   /*Add Popup*/
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [newSite, setNewSite] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
-  const siteOptions = ["Site A", "Site B", "Site C", "Site D"];
+  const [siteOptions, setSiteOptions] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
-
   /*Add Popup*/
+
+  /*Edit Popup*/
+  const [editSite, setEditSite] = useState(selectedItem?.name || '');
+  const [editStartDate, setEditStartDate] = useState(new Date(selectedItem?.startDate || new Date()));
+  const [editEndDate, setEditEndDate] = useState(new Date(selectedItem?.endDate || new Date()));
+  const [showEditStartPicker, setShowEditStartPicker] = useState(false);
+  const [showEditEndPicker, setShowEditEndPicker] = useState(false);
+  /*Edit Popup*/
+
+  const updateItem = async () => {
+    if (!selectedItem) return;
+
+    const requestData = {
+      action: "edit",
+      sr: Number(selectedItem.id),
+      fromDate: editStartDate.toISOString().split("T")[0],
+      toDate: editEndDate.toISOString().split("T")[0],
+      site: editSite,
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Log updated successfully!");
+        setModalVisible(false);
+        setData((prevData) =>
+          prevData.map((item) => (item.id === selectedItem.id ? { ...item, ...requestData } : item))
+        );
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error updating log:", error);
+      alert("Failed to update log.");
+    }
+  };
 
 
 
@@ -38,6 +81,7 @@ const DashboardScreen = () => {
           setEmail(storedEmail);
           setUsername(storedUsername || 'Guest'); // Default if username is not found
           fetchAttendanceLogs(storedEmail);
+          fetchSites();
         } else {
           console.warn('No email found in AsyncStorage');
         }
@@ -51,7 +95,7 @@ const DashboardScreen = () => {
 
   const fetchAttendanceLogs = async (userEmail) => {
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'fetchLogs', email: userEmail })
@@ -79,6 +123,30 @@ const DashboardScreen = () => {
     }
   };
 
+  const fetchSites = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        API_URL,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "getlist" }),
+        }
+      );
+      const data = await response.json();
+      if (data.status === "success") {
+        setSiteOptions(data.sites.map((s) => s.site)); // Extract site names
+      } else {
+        console.error("Failed to fetch sites");
+      }
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+    }
+    setLoading(false);
+  };
+
+
   const deleteItem = async () => {
     if (!selectedItem) return;
     console.log(selectedItem.id)
@@ -89,7 +157,7 @@ const DashboardScreen = () => {
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec",
+          API_URL,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -139,7 +207,7 @@ const DashboardScreen = () => {
     };
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec', {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
@@ -174,11 +242,13 @@ const DashboardScreen = () => {
 
       <TouchableOpacity
         style={styles.plusButton}
-        onPress={() => setIsAddModalVisible(true)}
+        onPress={() => {
+          setIsAddModalVisible(true);
+        }}
       >
-        <Text style={styles.plusText}>+</Text>
-
+        <Text style={styles.plusButtonText}>+</Text>
       </TouchableOpacity>
+
       <TouchableOpacity onPress={clearAsyncStorage}>
         <Text>Clear AsyncStorage</Text>
       </TouchableOpacity>
@@ -215,21 +285,78 @@ const DashboardScreen = () => {
       >
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
+            <TouchableOpacity style={styles.closeIcon} onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeText}>X</Text>
+            </TouchableOpacity>
             {selectedItem && (
               <>
-                <Text style={styles.modalText}>Site: {selectedItem.name}</Text>
-                <Text style={styles.modalText}>Start Date: {selectedItem.startDate}</Text>
-                <Text style={styles.modalText}>End Date: {selectedItem.endDate}</Text>
+                <Text style={styles.modalTitle}>Edit Log Entry</Text>
+                {/* Site Dropdown */}
+                <TouchableOpacity
+                  style={styles.dropdownTrigger}
+                  onPress={() => setShowPicker(!showPicker)}
+                >
+                  <Text style={styles.dropdownText}>{editSite || "Select Site"}</Text>
+                </TouchableOpacity>
+                {showPicker && (
+                  <Picker
+                    selectedValue={editSite}
+                    onValueChange={(itemValue) => {
+                      setEditSite(itemValue);
+                      setShowPicker(false);
+                    }}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Select Site" value="" />
+                    {siteOptions.map((site, index) => (
+                      <Picker.Item key={index} label={site} value={site} />
+                    ))}
+                  </Picker>
+                )}
+
+                {/* Start Date Picker */}
+                <TouchableOpacity style={styles.dateInput} onPress={() => setShowEditStartPicker(true)}>
+                  <Text style={styles.dateText}>Start Date: {editStartDate.toLocaleDateString()}</Text>
+                </TouchableOpacity>
+                {showEditStartPicker && (
+                  <DateTimePicker
+                    value={editStartDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowEditStartPicker(false);
+                      if (selectedDate) setEditStartDate(selectedDate);
+                    }}
+                  />
+                )}
+
+                {/* End Date Picker */}
+                <TouchableOpacity style={styles.dateInput} onPress={() => setShowEditEndPicker(true)}>
+                  <Text style={styles.dateText}>End Date: {editEndDate.toLocaleDateString()}</Text>
+                </TouchableOpacity>
+                {showEditEndPicker && (
+                  <DateTimePicker
+                    value={editEndDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowEditEndPicker(false);
+                      if (selectedDate) setEditEndDate(selectedDate);
+                    }}
+                  />
+                )}
+
+                {/* Buttons */}
+                <View style={styles.modalButtonRow}>
+                  <TouchableOpacity onPress={updateItem}>
+                    <Text style={[styles.button, styles.updateButton]}>Update</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={deleteItem}>
+                    <Text style={[styles.button, styles.deleteButton]}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
               </>
             )}
-            <View style={styles.modalButtonRow}>
-              <TouchableOpacity onPress={deleteItem}>
-                <Text style={[styles.closeButton, styles.deleteButton]}>Delete</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={[styles.closeButton, styles.closeButtonRight]}>Close</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
       </Modal>
@@ -252,19 +379,23 @@ const DashboardScreen = () => {
 
             {showPicker && (
               <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={newSite}
-                  onValueChange={(itemValue) => {
-                    setNewSite(itemValue);
-                    setShowPicker(false);
-                  }}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Site" value="" />
-                  {siteOptions.map((site, index) => (
-                    <Picker.Item key={index} label={site} value={site} />
-                  ))}
-                </Picker>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#0000ff" />
+                ) : (
+                  <Picker
+                    selectedValue={newSite}
+                    onValueChange={(itemValue) => {
+                      setNewSite(itemValue);
+                      setShowPicker(false);
+                    }}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Select Site" value="" />
+                    {siteOptions.map((site, index) => (
+                      <Picker.Item key={index} label={site} value={site} />
+                    ))}
+                  </Picker>
+                )}
               </View>
             )}
 

@@ -79,6 +79,38 @@ const DashboardScreen = () => {
     }
   };
 
+  const deleteItem = async () => {
+    if (!selectedItem) return;
+    console.log(selectedItem.id)
+    const requestData = {
+      action: "delete",
+      sr: Number(selectedItem.id), // Send the item's ID to be deleted
+    };
+
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestData),
+        }
+      );
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Log deleted successfully!");
+        setModalVisible(false);
+        setData((prevData) => prevData.filter((item) => item.id !== selectedItem.id)); // Remove from state
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error deleting log:", error);
+      alert("Failed to delete log.");
+    }
+  };
+
   useEffect(() => {
     console.log('Updated Data:', data);  // Log data whenever it changes
   }, [data]); // This will run every time `data` changes
@@ -89,12 +121,40 @@ const DashboardScreen = () => {
     setModalVisible(true);
   };
 
-  const addNewItem = () => {
-    if (newName.trim() && newStatus.trim()) {
-      setData([...data, { id: Date.now().toString(), name: newName, status: newStatus }]);
-      setNewName('');
-      setNewStatus('');
-      setIsAddModalVisible(false);
+  const addNewItem = async () => {
+    console.log("add called")
+    if (!username.trim() || !email.trim() || !newSite || !startDate || !endDate) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const requestData = {
+      action: "addLog",
+      user: username,
+      email: email,
+      fromDate: startDate.toISOString().split("T")[0],
+      toDate: endDate.toISOString().split("T")[0],
+      site: newSite,
+      days: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1,
+    };
+
+    try {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Log added successfully!");
+        setIsAddModalVisible(false);
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error adding log:", error);
+      alert("Failed to add log.");
     }
   };
 
@@ -163,7 +223,7 @@ const DashboardScreen = () => {
               </>
             )}
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <TouchableOpacity onPress={deleteItem}>
                 <Text style={[styles.closeButton, styles.deleteButton]}>Delete</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setModalVisible(false)}>

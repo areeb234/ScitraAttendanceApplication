@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,10 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
+  Image, TouchableOpacity
 } from 'react-native';
 
-const LoginScreen = ({navigation}) => {
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +26,7 @@ const LoginScreen = ({navigation}) => {
     }
 
     if (!validateEmail(email)) {
-      Alert.alert('Validation Error', 'Please enter a valid email address.');
+      Alert.alert('Validation Error', 'Please enter a valid company email address.');
       return;
     }
 
@@ -55,10 +56,10 @@ const LoginScreen = ({navigation}) => {
       console.log('✅ API Response:', responseData);
 
       if (responseData.status === 'success') {
-        Alert.alert('Success', 'OTP sent to your email.');
+        Alert.alert('Success', 'OTP has been sent to your email.');
         navigation.navigate('OTPVerification', {
           email,
-          username: responseData.user, // Pass the username
+          username: responseData.user,
         });
       } else {
         Alert.alert('Error', responseData.message || 'Login failed.');
@@ -74,21 +75,27 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Enter your Email:</Text>
+      <Image source={require('./Images/logo.jpeg')} style={styles.logo} />
+      <Text style={styles.header}>         Al Batha{"\n"}Business Trip Log</Text>
+      <Text style={styles.description}>
+        Please enter your company email address to receive a One-Time Password (OTP) for authentication.
+      </Text>
       <TextInput
         style={styles.input}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholder="Enter your company email"
       />
       {loading ? (
         <ActivityIndicator size="large" color="#007bff" />
       ) : (
-        <Button title="Login" onPress={handleLogin} />
-      )}
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>      )}
     </View>
-  );
+  );r
 };
 
 const styles = StyleSheet.create({
@@ -97,18 +104,50 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: 'white',
   },
-  label: {
-    fontSize: 18,
+  logo: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: 'bold',
     marginBottom: 10,
+    color: '#333',
+  },
+  description: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#555',
   },
   input: {
     width: '100%',
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
+    backgroundColor: '#fff',
     marginBottom: 15,
+  },
+  button: {
+    borderWidth: 2, // Border thickness
+    borderColor: '#007AFF', // Border color (blue)
+    borderRadius: 10, // Rounded corners
+    paddingVertical: 12, // Vertical padding
+    paddingHorizontal: 20, // Horizontal padding
+    backgroundColor: '#FFFFFF', // White background
+    alignItems: 'center', // Center text horizontally
+  },
+  buttonText: {
+    color: '#007AFF', // Blue text color
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

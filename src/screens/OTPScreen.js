@@ -1,9 +1,9 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, Button, Alert} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert, Image, StyleSheet } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const OTPVerificationScreen = ({route, navigation}) => {
-  const {email, username} = route.params; // Receive username
+const OTPVerificationScreen = ({ route, navigation }) => {
+  const { email, username } = route.params;
   const [otp, setOtp] = useState('');
 
   const handleVerifyOTP = async () => {
@@ -23,13 +23,12 @@ const OTPVerificationScreen = ({route, navigation}) => {
         },
       );
 
-      const data = await response.json(); // Parse the response as JSON
+      const data = await response.json();
 
       if (data.status === 'success') {
         await AsyncStorage.setItem('username', username);
-        await AsyncStorage.setItem('userEmail', email); // 🔹 Store email as well
-        navigation.navigate('UserDashboard', {username});
-
+        await AsyncStorage.setItem('userEmail', email);
+        navigation.navigate('UserDashboard', { username });
       } else {
         Alert.alert('Error', 'Invalid OTP');
       }
@@ -39,12 +38,83 @@ const OTPVerificationScreen = ({route, navigation}) => {
   };
 
   return (
-    <View>
-      <Text>Enter OTP:</Text>
-      <TextInput value={otp} onChangeText={setOtp} keyboardType="numeric" />
-      <Button title="Verify OTP" onPress={handleVerifyOTP} />
+    <View style={styles.container}>
+      {/* Logo in the top-left */}
+      <Image source={require('./Images/logo.jpeg')} style={styles.logo} />
+
+      <Text style={styles.title}>OTP Verification</Text>
+      <Text style={styles.subtitle}>A 6-digit OTP has been sent to your email</Text>
+
+      {/* OTP Input Field */}
+      <TextInput
+        style={styles.input}
+        placeholder="Enter OTP"
+        placeholderTextColor="#aaa"
+        value={otp}
+        onChangeText={setOtp}
+        keyboardType="numeric"
+      />
+
+      {/* Verify OTP Button */}
+      <TouchableOpacity style={styles.button} onPress={handleVerifyOTP}>
+        <Text style={styles.buttonText}>Verify OTP</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 export default OTPVerificationScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'white', // Light background
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+  },
+  input: {
+    width: '90%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    backgroundColor: '#FFF',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '90%',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});

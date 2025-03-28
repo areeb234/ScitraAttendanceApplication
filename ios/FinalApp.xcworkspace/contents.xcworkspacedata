@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:FinalApp.xcodeproj">
+      location = "developer:../../../../Users/areeb/Desktop/ScitraOffice/ScitraAttendanceApplication/ios/FinalApp.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">

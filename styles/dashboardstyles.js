@@ -83,8 +83,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  plusText: {
-    color: 'white',
+  plusButtonText: {
+    color: 'black',
     fontSize: 24,
     fontWeight: 'bold',
   },

@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, TouchableOpacity, Modal, TextInput, ActivityIndicator} from 'react-native';
+import {View, Text, FlatList, TouchableOpacity, Modal, ActivityIndicator} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/dashboardstyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // Update the import
+import {useNavigation, useRoute} from "@react-navigation/native";
+
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
 
 const DashboardScreen = () => {
+  const route = useRoute();
+  const currentRoute = route.name || "UserDashboard"; // Default to "Home" when undefined
+
+  const navigation = useNavigation();
   const [email, setEmail] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [username, setUsername] = useState(null);  // Add state for username
   const [selectedItem, setSelectedItem] = useState(null);
   const [data, setData] = useState([]);
-  const [newName, setNewName] = useState('');
-  const [newStatus, setNewStatus] = useState('');
+
   /*Add Popup*/
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -69,7 +74,46 @@ const DashboardScreen = () => {
     }
   };
 
+  const CustomDropdown = ({ options, selectedValue, onSelect }) => {
+    const [showDropdown, setShowDropdown] = useState(false);
 
+    return (
+      <View>
+        <TouchableOpacity
+          style={styles.dropdownTrigger}
+          onPress={() => setShowDropdown(true)}
+        >
+          <Text style={styles.dropdownText}>
+            {selectedValue ? selectedValue : "Select Site"}
+          </Text>
+        </TouchableOpacity>
+
+        <Modal visible={showDropdown} transparent animationType="fade">
+          <TouchableOpacity
+            style={styles.overlay}
+            onPress={() => setShowDropdown(false)}
+          />
+          <View style={styles.dropdownContainer1}>
+            <FlatList
+              data={options}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    onSelect(item);
+                    setShowDropdown(false);
+                  }}
+                >
+                  <Text style={styles.itemText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Modal>
+      </View>
+    );
+  };
 
   useEffect(() => {
     const getUserData = async () => {
@@ -80,8 +124,8 @@ const DashboardScreen = () => {
         if (storedEmail) {
           setEmail(storedEmail);
           setUsername(storedUsername || 'Guest'); // Default if username is not found
-          fetchAttendanceLogs(storedEmail);
-          fetchSites();
+          await fetchAttendanceLogs(storedEmail);
+          await fetchSites();
         } else {
           console.warn('No email found in AsyncStorage');
         }
@@ -101,7 +145,6 @@ const DashboardScreen = () => {
         body: JSON.stringify({ action: 'fetchLogs', email: userEmail })
       });
       const result = await response.json();
-      console.log(result)
       if (result.status === 'success') {
         const userNameFromResponse = result.logs[0]?.Name;
         if (userNameFromResponse) {
@@ -149,7 +192,6 @@ const DashboardScreen = () => {
 
   const deleteItem = async () => {
     if (!selectedItem) return;
-    console.log(selectedItem.id)
     const requestData = {
       action: "delete",
       sr: Number(selectedItem.id), // Send the item's ID to be deleted
@@ -180,7 +222,6 @@ const DashboardScreen = () => {
   };
 
   useEffect(() => {
-    console.log('Updated Data:', data);  // Log data whenever it changes
   }, [data]); // This will run every time `data` changes
 
 
@@ -190,7 +231,6 @@ const DashboardScreen = () => {
   };
 
   const addNewItem = async () => {
-    console.log("add called")
     if (!username.trim() || !email.trim() || !newSite || !startDate || !endDate) {
       alert("Please fill all fields.");
       return;
@@ -236,6 +276,7 @@ const DashboardScreen = () => {
 
   return (
     <View style={styles.container}>
+
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome, {username}</Text>
       </View>
@@ -249,27 +290,25 @@ const DashboardScreen = () => {
         <Text style={styles.plusButtonText}>+</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={clearAsyncStorage}>
-        <Text>Clear AsyncStorage</Text>
-      </TouchableOpacity>
+      
 
       <View style={styles.tableContainer}>
-        {/* Table Header */}
+
         <View style={styles.tableHeader}>
           <Text style={styles.headerCell}>Site</Text>
           <Text style={styles.headerCell}>Start Date</Text>
           <Text style={styles.headerCell}>End Date</Text>
         </View>
 
-        {/* Table Data */}
+
         <FlatList
           data={data}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
+          renderItem={({item}) => (
             <TouchableOpacity style={styles.tableRow} onPress={() => openModal(item)}>
-              <Text style={styles.cell}>{item.name}</Text> {/* Updated to item.name */}
-              <Text style={styles.cell}>{item.startDate}</Text> {/* Updated to item.startDate */}
-              <Text style={styles.cell}>{item.endDate}</Text> {/* Updated to item.endDate */}
+              <Text style={styles.cell}>{item.name}</Text>
+              <Text style={styles.cell}>{item.startDate}</Text>
+              <Text style={styles.cell}>{item.endDate}</Text>
             </TouchableOpacity>
           )}
         />
@@ -292,12 +331,11 @@ const DashboardScreen = () => {
               <>
                 <Text style={styles.modalTitle}>Edit Log Entry</Text>
                 {/* Site Dropdown */}
-                <TouchableOpacity
-                  style={styles.dropdownTrigger}
-                  onPress={() => setShowPicker(!showPicker)}
-                >
-                  <Text style={styles.dropdownText}>{editSite || "Select Site"}</Text>
-                </TouchableOpacity>
+                <CustomDropdown
+                  options={siteOptions}
+                  selectedValue={newSite}
+                  onSelect={setNewSite}
+                />
                 {showPicker && (
                   <Picker
                     selectedValue={editSite}
@@ -307,9 +345,9 @@ const DashboardScreen = () => {
                     }}
                     style={styles.picker}
                   >
-                    <Picker.Item label="Select Site" value="" />
+                    <Picker.Item label="Select Site" value=""/>
                     {siteOptions.map((site, index) => (
-                      <Picker.Item key={index} label={site} value={site} />
+                      <Picker.Item key={index} label={site} value={site}/>
                     ))}
                   </Picker>
                 )}
@@ -368,19 +406,16 @@ const DashboardScreen = () => {
             <Text style={styles.modalTitle}>Add New Entry</Text>
 
             {/* Site Dropdown */}
-            <TouchableOpacity
-              style={styles.dropdownTrigger}
-              onPress={() => setShowPicker(!showPicker)}
-            >
-              <Text style={styles.dropdownText}>
-                {newSite ? newSite : "Select Site"}
-              </Text>
-            </TouchableOpacity>
+            <CustomDropdown
+              options={siteOptions}
+              selectedValue={newSite}
+              onSelect={setNewSite}
+            />
 
             {showPicker && (
               <View style={styles.pickerContainer}>
                 {loading ? (
-                  <ActivityIndicator size="small" color="#0000ff" />
+                  <ActivityIndicator size="small" color="#0000ff"/>
                 ) : (
                   <Picker
                     selectedValue={newSite}
@@ -390,9 +425,9 @@ const DashboardScreen = () => {
                     }}
                     style={styles.picker}
                   >
-                    <Picker.Item label="Select Site" value="" />
+                    <Picker.Item label="Select Site" value=""/>
                     {siteOptions.map((site, index) => (
-                      <Picker.Item key={index} label={site} value={site} />
+                      <Picker.Item key={index} label={site} value={site}/>
                     ))}
                   </Picker>
                 )}
@@ -444,6 +479,28 @@ const DashboardScreen = () => {
         </View>
       </Modal>
 
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("UserDashboard")}
+          style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
+        >
+          <Text style={currentRoute === "UserDashboard" ? styles.activeText : styles.inactiveText}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate("AdminDashboard")}
+          style={[styles.bottomBarButton, currentRoute === "AdminDashboard" && styles.activeButton]}
+        >
+          <Text style={currentRoute === "AdminDashboard" ? styles.activeText : styles.inactiveText}>Admin</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate("ProfilePage")}
+          style={[styles.bottomBarButton, currentRoute === "ProfilePage" && styles.activeButton]}
+        >
+          <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -457,4 +514,5 @@ const clearAsyncStorage = async () => {
     console.error('Error clearing AsyncStorage:', error);
   }
 };
+
 export default DashboardScreen;

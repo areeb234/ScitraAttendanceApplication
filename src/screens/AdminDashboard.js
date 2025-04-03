@@ -1,47 +1,483 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList} from 'react-native';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import {View, Text, FlatList, TouchableOpacity, Modal, ActivityIndicator} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import styles from '../../styles/dashboardstyles';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import {useNavigation, useRoute} from "@react-navigation/native";
 
-const AdminDashboard = () => {
-  const [dashboardData, setDashboardData] = useState({});
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
 
-  const fetchDashboardData = async () => {
+const DashboardScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const currentRoute = route.name || "AdminDashboard"; // Default to "Home" when undefined
+  const [email, setEmail] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [username, setUsername] = useState(null);  // Add state for username
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [data, setData] = useState([]);
+
+  /*Add Popup*/
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [newSite, setNewSite] = useState('');
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [siteOptions, setSiteOptions] = useState([]);
+  /*Add Popup*/
+
+  /*Edit Popup*/
+  const [editSite, setEditSite] = useState(selectedItem?.name || '');
+  const [editStartDate, setEditStartDate] = useState(new Date(selectedItem?.startDate || new Date()));
+  const [editEndDate, setEditEndDate] = useState(new Date(selectedItem?.endDate || new Date()));
+  const [showEditStartPicker, setShowEditStartPicker] = useState(false);
+  const [showEditEndPicker, setShowEditEndPicker] = useState(false);
+  /*Edit Popup*/
+
+  const updateItem = async () => {
+    if (!selectedItem) return;
+
+    const requestData = {
+      action: "edit",
+      sr: Number(selectedItem.id),
+      fromDate: editStartDate.toISOString().split("T")[0],
+      toDate: editEndDate.toISOString().split("T")[0],
+      site: editSite,
+    };
+
     try {
-      const response = await axios.post(
-        'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec',
-        {
-          action: 'adminDashboard',
-        },
-      );
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
 
-      if (response.data.status === 'success') {
-        setDashboardData(response.data.dashboard);
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Log updated successfully!");
+        setModalVisible(false);
+        setData((prevData) =>
+          prevData.map((item) => (item.id === selectedItem.id ? { ...item, ...requestData } : item))
+        );
+      } else {
+        alert("Error: " + result.message);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error updating log:", error);
+      alert("Failed to update log.");
     }
   };
 
-  return (
-    <View>
-      <Text>Admin Dashboard</Text>
-      <FlatList
-        data={Object.keys(dashboardData)}
-        keyExtractor={item => item}
-        renderItem={({item}) => (
-          <View>
-            <Text>
-              {item}: {dashboardData[item]} days
-            </Text>
+  const CustomDropdown = ({ options, selectedValue, onSelect }) => {
+    const [showDropdown, setShowDropdown] = useState(false);
+
+    return (
+      <View>
+        <TouchableOpacity
+          style={styles.dropdownTrigger}
+          onPress={() => setShowDropdown(true)}
+        >
+          <Text style={styles.dropdownText}>
+            {selectedValue ? selectedValue : "Select Site"}
+          </Text>
+        </TouchableOpacity>
+
+        <Modal visible={showDropdown} transparent animationType="fade">
+          <TouchableOpacity
+            style={styles.overlay}
+            onPress={() => setShowDropdown(false)}
+          />
+          <View style={styles.dropdownContainer1}>
+            <FlatList
+              data={options}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    onSelect(item);
+                    setShowDropdown(false);
+                  }}
+                >
+                  <Text style={styles.itemText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
           </View>
-        )}
-      />
+        </Modal>
+      </View>
+    );
+  };
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const storedEmail = await AsyncStorage.getItem('userEmail');
+        const storedUsername = await AsyncStorage.getItem('username');
+
+        if (storedEmail) {
+          setEmail(storedEmail);
+          setUsername(storedUsername || 'Guest'); // Default if username is not found
+          await fetchAttendanceLogs(storedEmail);
+          await fetchSites();
+        } else {
+          console.warn('No email found in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error fetching data from AsyncStorage:', error);
+      }
+    };
+
+    getUserData();
+  }, []);
+
+  const fetchAttendanceLogs = async (userEmail) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'adminDashboard'})
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+        console.log(result)
+        const userNameFromResponse = result.logs[0]?.Name;
+        if (userNameFromResponse) {
+          setUsername(userNameFromResponse);  // Set the username
+        }
+        // Map the response data to match the format of your state data
+        const transformedData = result.logs.map(item => ({
+          id: item.logID.toString(), // Convert logID to string
+          name: item.site,
+          startDate: item.fromDate ? new Date(item.fromDate).toLocaleDateString() : 'Invalid Date', // Check if fromDate exists and format correctly
+          endDate: item.toDate ? new Date(item.toDate).toLocaleDateString() : 'Invalid Date' // Check if toDate exists and format correctly
+        }));
+        setData(transformedData); // Update state with transformed data
+      } else {
+        console.error('Error fetching logs:', result.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const fetchSites = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        API_URL,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "getlist" }),
+        }
+      );
+      const data = await response.json();
+      if (data.status === "success") {
+        setSiteOptions(data.sites.map((s) => s.site)); // Extract site names
+      } else {
+        console.error("Failed to fetch sites");
+      }
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+    }
+    setLoading(false);
+  };
+
+
+  const deleteItem = async () => {
+    if (!selectedItem) return;
+    const requestData = {
+      action: "delete",
+      sr: Number(selectedItem.id), // Send the item's ID to be deleted
+    };
+
+    try {
+      const response = await fetch(
+        API_URL,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestData),
+        }
+      );
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Log deleted successfully!");
+        setModalVisible(false);
+        setData((prevData) => prevData.filter((item) => item.id !== selectedItem.id)); // Remove from state
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error deleting log:", error);
+      alert("Failed to delete log.");
+    }
+  };
+
+  useEffect(() => {
+  }, [data]); // This will run every time `data` changes
+
+
+  const openModal = (item) => {
+    setSelectedItem(item);
+    setModalVisible(true);
+  };
+
+  const addNewItem = async () => {
+    if (!username.trim() || !email.trim() || !newSite || !startDate || !endDate) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const requestData = {
+      action: "addLog",
+      user: username,
+      email: email,
+      fromDate: startDate.toISOString().split("T")[0],
+      toDate: endDate.toISOString().split("T")[0],
+      site: newSite,
+      days: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1,
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert("Log added successfully!");
+        setIsAddModalVisible(false);
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error adding log:", error);
+      alert("Failed to add log.");
+    }
+  };
+
+  if (!username) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+
+      <View style={styles.header}>
+        <Text style={styles.welcomeText}>Welcome, {username}</Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.plusButton}
+        onPress={() => {
+          setIsAddModalVisible(true);
+        }}
+      >
+        <Text style={styles.plusButtonText}>+</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={clearAsyncStorage}>
+        <Text>Log Out</Text>
+      </TouchableOpacity>
+
+      <View style={styles.tableContainer}>
+
+        <View style={styles.tableHeader}>
+          <Text style={styles.headerCell}>Name</Text>
+          <Text style={styles.headerCell}>Site</Text>
+          <Text style={styles.headerCell}>Start Date</Text>
+          <Text style={styles.headerCell}>End Date</Text>
+        </View>
+
+
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({item}) => (
+            <TouchableOpacity style={styles.tableRow} onPress={() => openModal(item)}>
+              <Text style={styles.cell}>{item.name}</Text>
+              <Text style={styles.cell}>{item.name}</Text>
+              <Text style={styles.cell}>{item.startDate}</Text>
+              <Text style={styles.cell}>{item.endDate}</Text>
+            </TouchableOpacity>
+          )}
+        />
+
+      </View>
+
+      {/* Modal for Viewing Item Details */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <TouchableOpacity style={styles.closeIcon} onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeText}>X</Text>
+            </TouchableOpacity>
+            {selectedItem && (
+              <>
+                <Text style={styles.modalTitle}>Edit Log Entry</Text>
+                {/* Site Dropdown */}
+                <CustomDropdown
+                  options={siteOptions}
+                  selectedValue={newSite}
+                  onSelect={setEditSite}
+                />
+
+                {/* Start Date Picker */}
+                <TouchableOpacity style={styles.dateInput} onPress={() => setShowEditStartPicker(true)}>
+                  <Text style={styles.dateText}>Start Date: {editStartDate.toLocaleDateString()}</Text>
+                </TouchableOpacity>
+                {showEditStartPicker && (
+                  <DateTimePicker
+                    value={editStartDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowEditStartPicker(false);
+                      if (selectedDate) setEditStartDate(selectedDate);
+                    }}
+                  />
+                )}
+
+                {/* End Date Picker */}
+                <TouchableOpacity style={styles.dateInput} onPress={() => setShowEditEndPicker(true)}>
+                  <Text style={styles.dateText}>End Date: {editEndDate.toLocaleDateString()}</Text>
+                </TouchableOpacity>
+                {showEditEndPicker && (
+                  <DateTimePicker
+                    value={editEndDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowEditEndPicker(false);
+                      if (selectedDate) setEditEndDate(selectedDate);
+                    }}
+                  />
+                )}
+
+                {/* Buttons */}
+                <View style={styles.modalButtonRow}>
+                  <TouchableOpacity onPress={updateItem}>
+                    <Text style={[styles.button, styles.updateButton]}>Update</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={deleteItem}>
+                    <Text style={[styles.button, styles.deleteButton]}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Add Data Modal */}
+      <Modal visible={isAddModalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Add New Entry</Text>
+
+            {/* Site Dropdown */}
+            <CustomDropdown
+              options={siteOptions}
+              selectedValue={newSite}
+              onSelect={setNewSite}
+            />
+
+
+            {/* Start Date Picker */}
+            <TouchableOpacity style={styles.dateInput} onPress={() => setShowStartPicker(true)}>
+              <Text style={styles.dateText}>Start Date: {startDate.toLocaleDateString()}</Text>
+            </TouchableOpacity>
+            {showStartPicker && (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowStartPicker(false);
+                  if (selectedDate) setStartDate(selectedDate);
+                }}
+              />
+            )}
+
+            {/* End Date Picker */}
+            <TouchableOpacity style={styles.dateInput} onPress={() => setShowEndPicker(true)}>
+              <Text style={styles.dateText}>End Date: {endDate.toLocaleDateString()}</Text>
+            </TouchableOpacity>
+            {showEndPicker && (
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowEndPicker(false);
+                  if (selectedDate) setEndDate(selectedDate);
+                }}
+              />
+            )}
+
+            {/* Buttons */}
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity onPress={() => setIsAddModalVisible(false)}>
+                <Text style={[styles.closeButton, styles.closeButtonLeft]}>Close</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={addNewItem}>
+                <Text style={[styles.closeButton, styles.addButton]}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <View style={styles.bottomBar}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("UserDashboard")}
+        style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
+      >
+        <Text style={currentRoute === "UserDashboard" ? styles.activeText : styles.inactiveText}>Home</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("AdminDashboard")}
+        style={[styles.bottomBarButton, currentRoute === "AdminDashboard" && styles.activeButton]}
+      >
+        <Text style={currentRoute === "AdminDashboard" ? styles.activeText : styles.inactiveText}>Admin</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("ProfilePage")}
+        style={[styles.bottomBarButton, currentRoute === "ProfilePage" && styles.activeButton]}
+      >
+        <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
+      </TouchableOpacity>
+    </View>
     </View>
   );
 };
 
-export default AdminDashboard;
+
+const clearAsyncStorage = async () => {
+  try {
+    await AsyncStorage.clear();
+    console.log('AsyncStorage cleared!');
+  } catch (error) {
+    console.error('Error clearing AsyncStorage:', error);
+  }
+};
+
+export default DashboardScreen;

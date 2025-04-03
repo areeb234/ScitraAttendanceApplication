@@ -6,6 +6,8 @@ import LoginScreen from './src/screens/LoginScreen';
 import OTPVerificationScreen from './src/screens/OTPScreen';
 import UserDashboard from './src/screens/Dashboard';
 import AdminDashboard from './src/screens/AdminDashboard';
+import ProfilePage from './src/screens/ProfilePage';
+
 import { View, ActivityIndicator } from 'react-native';
 
 const Stack = createStackNavigator();
@@ -43,7 +45,8 @@ const App = () => {
         <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
         <Stack.Screen name="UserDashboard" component={UserDashboard} />
         <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-      </Stack.Navigator>
+        <Stack.Screen name="ProfilePage" component={ProfilePage} />
+        </Stack.Navigator>
     </NavigationContainer>
   );
 };

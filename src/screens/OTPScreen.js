@@ -7,6 +7,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
   const [otp, setOtp] = useState('');
 
   const handleVerifyOTP = async () => {
+    console.log(email, otp);
     try {
       const response = await fetch(
         'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec',
@@ -22,20 +23,32 @@ const OTPVerificationScreen = ({ route, navigation }) => {
           }),
         },
       );
-
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
       const data = await response.json();
-
+  
       if (data.status === 'success') {
+        const username = data.user; // Ensure 'username' comes from API
+  
+        if (!username) {
+          throw new Error('Username is missing in the response');
+        }
+  
         await AsyncStorage.setItem('username', username);
         await AsyncStorage.setItem('userEmail', email);
         navigation.navigate('UserDashboard', { username });
       } else {
-        Alert.alert('Error', 'Invalid OTP');
+        Alert.alert('Error', data.message || 'Invalid OTP');
       }
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong');
+      console.error('Verification error:', error);
+      Alert.alert('Error', error.message || 'Something went wrong');
     }
   };
+  
 
   return (
     <View style={styles.container}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, FlatList, TouchableOpacity, Modal, ActivityIndicator} from 'react-native';
+import {View, Text,   TextInput,  FlatList, TouchableOpacity, Modal, ActivityIndicator} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/dashboardstyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -35,7 +35,98 @@ const DashboardScreen = () => {
   const [editEndDate, setEditEndDate] = useState(new Date(selectedItem?.endDate || new Date()));
   const [showEditStartPicker, setShowEditStartPicker] = useState(false);
   const [showEditEndPicker, setShowEditEndPicker] = useState(false);
-  /*Edit Popup*/
+  /*Edit Popup*/  
+
+  // filter part
+  const [filteredData, setFilteredData] = useState([]); // Filtered data for the table
+  const [filterModalVisible, setFilterModalVisible] = useState(false); // Toggle filter dropdown
+  const usernameOptions = [...new Set(data.map((item) => item.username))];
+
+  
+  // Filter States
+  const [filterUsername, setFilterUsername] = useState('');
+  const [filterSite, setFilterSite] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState(null);
+  const [filterEndDate, setFilterEndDate] = useState(null);
+
+
+// Utility function to convert DD/MM/YYYY to YYYY-MM-DD
+const convertToISODate = (dateString) => {
+  const parts = dateString.split('/');
+  if (parts.length === 3) {
+    // Ensure it is in the format YYYY-MM-DD
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateString; // Return the original date if it's already valid
+};
+
+const filterData = () => {
+  let filtered = data;
+
+  if (filterUsername) {
+    filtered = filtered.filter(item =>
+      item.username.toLowerCase().includes(filterUsername.toLowerCase())
+    );
+  }
+
+  if (filterSite) {
+    filtered = filtered.filter(item =>
+      item.site.toLowerCase().includes(filterSite.toLowerCase())
+    );
+  }
+
+  // Debugging start date filter with validation
+  if (filterStartDate) {
+    const parsedStartDate = new Date(convertToISODate(filterStartDate));
+    if (isNaN(parsedStartDate)) {
+      console.error("Invalid Filter Start Date:", filterStartDate);
+    } else {
+      console.log("Filter Start Date:", parsedStartDate.toISOString());
+    }
+
+    filtered = filtered.filter(item => {
+      const itemStartDate = new Date(convertToISODate(item.startDate));
+      if (isNaN(itemStartDate)) {
+        console.error("Invalid Item Start Date:", item.startDate);
+      } else {
+        console.log("Item Start Date:", itemStartDate.toISOString());
+      }
+      return itemStartDate >= parsedStartDate;
+    });
+  }
+
+  if (filterEndDate) {
+    const parsedEndDate = new Date(convertToISODate(filterEndDate));
+    filtered = filtered.filter(item => {
+      const itemEndDate = new Date(convertToISODate(item.endDate));
+      return itemEndDate <= parsedEndDate;
+    });
+  }
+
+  // If both start and end dates are selected, filter by both
+  if (filterStartDate && filterEndDate) {
+    const parsedStartDate = new Date(convertToISODate(filterStartDate));
+    const parsedEndDate = new Date(convertToISODate(filterEndDate));
+    filtered = filtered.filter(item => {
+      const itemStartDate = new Date(convertToISODate(item.startDate));
+      const itemEndDate = new Date(convertToISODate(item.endDate));
+      return itemStartDate >= parsedStartDate && itemEndDate <= parsedEndDate;
+    });
+  }
+
+  setFilteredData(filtered);
+  setFilterModalVisible(false); // Close filter dropdown after applying
+  console.log("Filtered data:", filtered);
+};
+
+  
+  
+
+  // Load data into filteredData initially
+  useEffect(() => {
+    setFilteredData(data);
+  }, [data]);
+
 
   const updateItem = async () => {
     if (!selectedItem) return;
@@ -150,11 +241,13 @@ const DashboardScreen = () => {
         }
         // Map the response data to match the format of your state data
         const transformedData = result.logs.map(item => ({
-          id: item.logID.toString(), // Convert logID to string
-          name: item.site,
-          startDate: item.fromDate ? new Date(item.fromDate).toLocaleDateString() : 'Invalid Date', // Check if fromDate exists and format correctly
-          endDate: item.toDate ? new Date(item.toDate).toLocaleDateString() : 'Invalid Date' // Check if toDate exists and format correctly
+          id: item.logID.toString(),
+          username: item.user || 'N/A', // Add the username from response
+          site: item.site || 'N/A',
+          startDate: item.fromDate ? new Date(item.fromDate).toLocaleDateString() : 'Invalid Date',
+          endDate: item.toDate ? new Date(item.toDate).toLocaleDateString() : 'Invalid Date'
         }));
+        
         setData(transformedData); // Update state with transformed data
       } else {
         console.error('Error fetching logs:', result.message);
@@ -276,7 +369,7 @@ const DashboardScreen = () => {
     <View style={styles.container}>
 
       <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome, {username}</Text>
+        <Text style={styles.welcomeText}>Welcome Admin</Text>
       </View>
 
       <TouchableOpacity
@@ -287,28 +380,114 @@ const DashboardScreen = () => {
       >
         <Text style={styles.plusButtonText}>+</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity onPress={clearAsyncStorage}>
-        <Text>Log Out</Text>
+      <TouchableOpacity 
+        style={{ backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginBottom: 10 }} 
+        onPress={() => setFilterModalVisible(true)}
+      >
+        <Text style={{ color: '#fff', textAlign: 'center' }}>Filter</Text>
       </TouchableOpacity>
+
+      {/* Filter Modal */}
+      <Modal visible={filterModalVisible} animationType="slide" transparent={true}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: 'white', padding: 20, width: '80%', borderRadius: 10 }}>
+
+            {/* Username Filter */}
+            <Text>Filter by Username:</Text>
+            <CustomDropdown
+              options={usernameOptions}
+              selectedValue={filterUsername}
+              onSelect={setFilterUsername}
+            />
+
+            {/* Site Filter */}
+            <Text>Filter by Site:</Text>
+            <CustomDropdown
+              options={siteOptions}
+              selectedValue={filterSite}
+              onSelect={setFilterSite}
+            />
+
+            {/* Start Date Filter */}
+            <Text>Filter by Start Date:</Text>
+            <TouchableOpacity onPress={() => setShowStartPicker(true)} style={{ padding: 10, backgroundColor: '#f0f0f0', marginBottom: 10 }}>
+              <Text>{filterStartDate ? filterStartDate.toDateString() : 'Select Start Date'}</Text>
+            </TouchableOpacity>
+            {showStartPicker && (
+              <DateTimePicker
+                value={filterStartDate || new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  setShowStartPicker(false);
+                  if (date) setFilterStartDate(date);
+                }}
+              />
+            )}
+
+            {/* End Date Filter */}
+            <Text>Filter by End Date:</Text>
+            <TouchableOpacity onPress={() => setShowEndPicker(true)} style={{ padding: 10, backgroundColor: '#f0f0f0', marginBottom: 10 }}>
+              <Text>{filterEndDate ? filterEndDate.toDateString() : 'Select End Date'}</Text>
+            </TouchableOpacity>
+            {showEndPicker && (
+              <DateTimePicker
+                value={filterEndDate || new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  setShowEndPicker(false);
+                  if (date) setFilterEndDate(date);
+                }}
+              />
+            )}
+
+            {/* Apply and Close Buttons */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
+              <TouchableOpacity onPress={filterData} style={{ backgroundColor: '#28a745', padding: 10, borderRadius: 5, marginTop: 10  }}>
+                <Text style={{ color: "#000", textAlign: "center"  }}>Apply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setFilterModalVisible(false)} style={{ backgroundColor: '#dc3545', padding: 10, borderRadius: 5, marginTop: 10 }}>
+                <Text style={{ color: "#000", textAlign: "center"  }}>Close</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                      onPress={() => {
+                        setFilterUsername(null);
+                        setFilterSite(null);
+                        setFilterStartDate(null);
+                        setFilterEndDate(null);
+                        setFilteredData([...data]);
+                        setFilterModalVisible(false);
+                      }}
+                      style={{ backgroundColor: "#ffc107", padding: 10, borderRadius: 5, marginTop: 10 }}
+                      >
+                      <Text style={{ color: "#000", textAlign: "center" }}>Reset</Text>
+                    </TouchableOpacity>
+
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+
 
       <View style={styles.tableContainer}>
 
         <View style={styles.tableHeader}>
-          <Text style={styles.headerCell}>Name</Text>
-          <Text style={styles.headerCell}>Site</Text>
+        <Text style={styles.headerCell}>User</Text>
+        <Text style={styles.headerCell}>Site</Text>
           <Text style={styles.headerCell}>Start Date</Text>
           <Text style={styles.headerCell}>End Date</Text>
         </View>
 
 
         <FlatList
-          data={data}
+          data={filteredData}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({item}) => (
             <TouchableOpacity style={styles.tableRow} onPress={() => openModal(item)}>
-              <Text style={styles.cell}>{item.name}</Text>
-              <Text style={styles.cell}>{item.name}</Text>
+              <Text style={styles.cell}>{item.username}</Text>
+              <Text style={styles.cell}>{item.site}</Text>
               <Text style={styles.cell}>{item.startDate}</Text>
               <Text style={styles.cell}>{item.endDate}</Text>
             </TouchableOpacity>

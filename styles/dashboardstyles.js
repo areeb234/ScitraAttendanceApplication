@@ -16,27 +16,50 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: 16,
+    paddingHorizontal: 5, // Prevent text from touching edges
   },
 
+  cell: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 14,
+    paddingHorizontal: 5, 
+  },
   tableContainer: {
     marginTop: 20,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     overflow: 'hidden',
+    width: '100%',
   },
 
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: '#ddd',
     paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#aaa',
   },
 
   tableRow: {
     flexDirection: 'row',
+    alignItems: 'center', // Align items vertically
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: '#ccc',
-    paddingVertical: 10,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: 'white',
+    marginBottom: 5,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
   },
   header: {
     backgroundColor: 'white',
@@ -55,22 +78,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
-    backgroundColor: 'white',
-    marginBottom: 5,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  cell: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 16,
-  },
+
 
   plusButton: {
     position: 'absolute',

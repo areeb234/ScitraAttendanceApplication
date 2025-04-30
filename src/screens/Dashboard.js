@@ -155,9 +155,20 @@ const DashboardScreen = () => {
         const transformedData = result.logs.map(item => ({
           id: item.logID.toString(), // Convert logID to string
           name: item.site,
-          startDate: item.fromDate ? new Date(item.fromDate).toLocaleDateString() : 'Invalid Date', // Check if fromDate exists and format correctly
-          endDate: item.toDate ? new Date(item.toDate).toLocaleDateString() : 'Invalid Date' // Check if toDate exists and format correctly
-        }));
+          startDate: item.fromDate
+          ? new Date(item.fromDate).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric'
+            })
+          : 'Invalid Date',
+        endDate: item.toDate
+          ? new Date(item.toDate).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric'
+            })
+          : 'Invalid Date',   }));
         setData(transformedData); // Update state with transformed data
       } else {
         console.error('Error fetching logs:', result.message);

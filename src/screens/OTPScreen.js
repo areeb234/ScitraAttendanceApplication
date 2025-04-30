@@ -53,7 +53,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       {/* Logo in the top-left */}
-      <Image source={require('./Images/logo.jpeg')} style={styles.logo} />
+      {/* <Image source={require('./Images/logo.jpeg')} style={styles.logo} /> */}
 
       <Text style={styles.title}>OTP Verification</Text>
       <Text style={styles.subtitle}>A 4-digit OTP has been sent to your email</Text>

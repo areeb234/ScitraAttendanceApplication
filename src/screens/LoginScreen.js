@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   Button,
+  Modal,
   Alert,
   ActivityIndicator,
   StyleSheet,
@@ -13,6 +14,9 @@ import {
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
 
   const validateEmail = email => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,7 +30,7 @@ const LoginScreen = ({ navigation }) => {
     }
 
     if (!validateEmail(email)) {
-      Alert.alert('Validation Error', 'Please enter a valid company email address.');
+      Alert.alert('Validation Error', 'Please enter a valid email address.');
       return;
     }
 
@@ -73,12 +77,53 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+  const handleSignup = async () => {
+    if (!signupName.trim() || !signupEmail.trim()) {
+      Alert.alert('Validation Error', 'Name and Email cannot be empty.');
+      return;
+    }
+
+    if (!validateEmail(signupEmail)) {
+      Alert.alert('Validation Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'signup',
+            name: signupName,
+            email: signupEmail,
+          }),
+        },
+      );
+
+      const responseData = await response.json();
+
+      if (responseData.status === 'success') {
+        Alert.alert('Signup Successful', responseData.message || 'Signup completed successfully.');
+        setModalVisible(false);
+        setSignupName('');
+        setSignupEmail('');
+      } else {
+        Alert.alert('Error', responseData.message || 'Signup failed.');
+      }
+    } catch (error) {
+      Alert.alert('Error', `Something went wrong: ${error.message}`);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Image source={require('./Images/logo.jpeg')} style={styles.logo} />
-      <Text style={styles.header}>         Al Batha{"\n"}Business Trip Log</Text>
+      <Text style={styles.header}>{"\n"}Business Trip Log</Text>
       <Text style={styles.description}>
-        Please enter your company email address to receive a One-Time Password (OTP) for authentication.
+        Please enter your registered email address to receive a One-Time Password (OTP) for authentication.
       </Text>
       <TextInput
         style={styles.input}
@@ -86,14 +131,49 @@ const LoginScreen = ({ navigation }) => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholder="Enter your company email"
+        placeholder="Enter your registered email"
       />
       {loading ? (
         <ActivityIndicator size="large" color="#007bff" />
       ) : (
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>      )}
+        </TouchableOpacity>   
+      )}
+      <TouchableOpacity style={styles.signupButton} onPress={() => setModalVisible(true)}>
+        <Text style={styles.signupText}>Signup</Text>
+      </TouchableOpacity>
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Signup</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              value={signupName}
+              onChangeText={setSignupName}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={signupEmail}
+              onChangeText={setSignupEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <TouchableOpacity style={styles.modalButton} onPress={handleSignup}>
+              <Text style={styles.modalButtonText}>Signup</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );r
 };
@@ -148,6 +228,48 @@ const styles = StyleSheet.create({
     color: '#007AFF', // Blue text color
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  signupButton: {
+    marginTop: 15,
+  },
+  signupText: {
+    color: '#007AFF',
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  modalButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  closeButton: {
+    marginTop: 10,
+  },
+  closeButtonText: {
+    color: 'red',
   },
 });
 

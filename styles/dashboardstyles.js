@@ -121,9 +121,22 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    borderRadius: 15,
+    width: '85%',
+    maxWidth: 400,
+    alignSelf: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
 
   pickerContainer: {
@@ -141,39 +154,66 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   dateInput: {
-    padding: 10,
-    backgroundColor: '#ddd',
-    borderRadius: 5,
-    marginBottom: 10,
+    padding: 12,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   dateText: {
     fontSize: 16,
+    color: '#333',
   },
   modalButtonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 20,
   },
   closeButton: {
-    padding: 10,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#e0e0e0',
+    marginHorizontal: 5,
   },
-  closeButtonLeft: { color: 'red' },
-  addButton: { color: 'green' },
-
+  addButton: {
+    backgroundColor: '#28a745',
+    color: '#fff',
+  },
+  
+  closeButtonLeft: {
+    backgroundColor: '#dc3545',
+    color: '#fff',
+  },
   container1: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
   dropdownTrigger: {
-    padding: 15,
+    padding: 12,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
-    width: 200,
+    borderRadius: 8,
     backgroundColor: "#fff",
+    marginBottom: 15,
   },
+  
+  dropdownContainer1: {
+    position: 'absolute',
+    top: '30%',
+    left: '10%',
+    right: '10%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    elevation: 10,
+    maxHeight: '50%',
+  },
+  
   dropdownText: {
     textAlign: "center",
   },
@@ -181,27 +221,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  dropdownContainer: {
-    position: "absolute",
-    top: "50%",
-    left: "25%",
-    width: "50%",
-    backgroundColor: "white",  // Ensure solid background
-    borderRadius: 5,
-    elevation: 5,
-    padding: 10,
-    opacity: 1,  // Ensure no opacity here
-  },
-  dropdownItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-    opacity: 1,  // Explicitly set opacity to 1
-    backgroundColor: "white",  // Ensure no opacity in background
-  },
 
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  
   itemText: {
-    textAlign: "center",
+    fontSize: 16,
+    textAlign: 'left',
+    color: '#333',
   },
   bottomBar: {
     flexDirection: "row",
@@ -244,5 +275,6 @@ const styles = StyleSheet.create({
     width: 'auto', // Allow width to adjust based on content
   },
 
+  
 });
 export default styles;

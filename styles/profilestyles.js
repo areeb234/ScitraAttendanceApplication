@@ -91,5 +91,75 @@ const styles = StyleSheet.create({
         alignItems: 'center',  // Center text horizontally
         width: 'auto', // Allow width to adjust based on content
       },
+      deleteButton: {
+        marginTop: 20,
+        backgroundColor: '#d9534f',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      },
+      deleteText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+      },
+      
+      modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      },
+      modalContainer: {
+        backgroundColor: '#fff',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+        width: '80%',
+      },
+      modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+      },
+      modalText: {
+        fontSize: 16,
+        marginBottom: 20,
+        textAlign: 'center',
+      },
+      modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+      },
+      confirmButton: {
+        backgroundColor: '#ff4d4d',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 5,
+        alignItems: 'center',
+      },
+      confirmText: {
+        color: '#fff',
+        fontWeight: 'bold',
+      },
+      cancelButton: {
+        backgroundColor: '#ccc',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        marginLeft: 5,
+        alignItems: 'center',
+      },
+      cancelText: {
+        color: '#333',
+        fontWeight: 'bold',
+      },
+      
   });
   export default styles;

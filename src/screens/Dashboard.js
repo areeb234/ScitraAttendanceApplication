@@ -138,6 +138,7 @@ const DashboardScreen = () => {
   }, []);
 
   const fetchAttendanceLogs = async (userEmail) => {
+    setLoading(true); // Start loading
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -299,7 +300,10 @@ const DashboardScreen = () => {
           <Text style={styles.headerCell}>Start Date</Text>
           <Text style={styles.headerCell}>End Date</Text>
         </View>
-
+        
+        {loading ? (
+  <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
+) : (
 
         <FlatList
           data={data}
@@ -312,7 +316,7 @@ const DashboardScreen = () => {
             </TouchableOpacity>
           )}
         />
-
+        )}
       </View>
 
       {/* Modal for Viewing Item Details */}
@@ -481,25 +485,30 @@ const DashboardScreen = () => {
 
       <View style={styles.bottomBar}>
         <TouchableOpacity
-          onPress={() => navigation.navigate("UserDashboard")}
+          onPress={() => navigation.replace("UserDashboard")}
           style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
         >
           <Text style={currentRoute === "UserDashboard" ? styles.activeText : styles.inactiveText}>Home</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate("AdminDashboard")}
+          onPress={() => navigation.replace("AdminDashboard")}
           style={[styles.bottomBarButton, currentRoute === "AdminDashboard" && styles.activeButton]}
         >
           <Text style={currentRoute === "AdminDashboard" ? styles.activeText : styles.inactiveText}>Admin</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate("ProfilePage")}
+          onPress={() => navigation.replace("ProfilePage")}
           style={[styles.bottomBarButton, currentRoute === "ProfilePage" && styles.activeButton]}
         >
           <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+            onPress={() => navigation.replace("Travel Status")}
+            style={[styles.bottomBarButton, currentRoute === "Travel Status" && styles.activeButton]}>
+            <Text style={currentRoute === "Travel Status" ? styles.activeText : styles.inactiveText}>Status</Text>
+          </TouchableOpacity>
       </View>
     </View>
   );

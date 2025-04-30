@@ -213,7 +213,6 @@ const filterData = () => {
           setEmail(storedEmail);
           setUsername(storedUsername || 'Guest'); // Default if username is not found
           await fetchAttendanceLogs(storedEmail);
-          await fetchSites();
         } else {
           console.warn('No email found in AsyncStorage');
         }
@@ -226,59 +225,70 @@ const filterData = () => {
   }, []);
 
   const fetchAttendanceLogs = async (userEmail) => {
+    setLoading(true); // Start loading
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'adminDashboard'})
+        body: JSON.stringify({ action: 'adminDashboard' })
       });
       const result = await response.json();
       if (result.status === 'success') {
-        console.log(result)
-        const userNameFromResponse = result.logs[0]?.Name;
-        if (userNameFromResponse) {
-          setUsername(userNameFromResponse);  // Set the username
-        }
-        // Map the response data to match the format of your state data
         const transformedData = result.logs.map(item => ({
           id: item.logID.toString(),
-          username: item.user || 'N/A', // Add the username from response
+          username: item.user || 'N/A',
           site: item.site || 'N/A',
-          startDate: item.fromDate ? new Date(item.fromDate).toLocaleDateString() : 'Invalid Date',
-          endDate: item.toDate ? new Date(item.toDate).toLocaleDateString() : 'Invalid Date'
+          startDate: item.fromDate
+          ? new Date(item.fromDate).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric'
+            })
+          : 'Invalid Date',
+        endDate: item.toDate
+          ? new Date(item.toDate).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric'
+            })
+          : 'Invalid Date',
+
         }));
-        
-        setData(transformedData); // Update state with transformed data
+        setData(transformedData);
+        setSiteOptions([...new Set(transformedData.map(item => item.site))]);
       } else {
         console.error('Error fetching logs:', result.message);
       }
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
+  
 
-  const fetchSites = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        API_URL,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "getlist" }),
-        }
-      );
-      const data = await response.json();
-      if (data.status === "success") {
-        setSiteOptions(data.sites.map((s) => s.site)); // Extract site names
-      } else {
-        console.error("Failed to fetch sites");
-      }
-    } catch (error) {
-      console.error("Error fetching sites:", error);
-    }
-    setLoading(false);
-  };
+  // const fetchSites = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(
+  //       API_URL,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ action: "getlist" }),
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     if (data.status === "success") {
+  //       setSiteOptions(data.sites.map((s) => s.site)); // Extract site names
+  //     } else {
+  //       console.error("Failed to fetch sites");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching sites:", error);
+  //   }
+  //   setLoading(false);
+  // };
 
 
   const deleteItem = async () => {
@@ -480,7 +490,9 @@ const filterData = () => {
           <Text style={styles.headerCell}>End Date</Text>
         </View>
 
-
+        {loading ? (
+  <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
+      ) : (
         <FlatList
           data={filteredData}
           keyExtractor={(item) => item.id.toString()}
@@ -493,7 +505,7 @@ const filterData = () => {
             </TouchableOpacity>
           )}
         />
-
+        )}
       </View>
 
       {/* Modal for Viewing Item Details */}
@@ -625,25 +637,30 @@ const filterData = () => {
       </Modal>
       <View style={styles.bottomBar}>
       <TouchableOpacity
-        onPress={() => navigation.navigate("UserDashboard")}
+        onPress={() => navigation.replace("UserDashboard")}
         style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
       >
         <Text style={currentRoute === "UserDashboard" ? styles.activeText : styles.inactiveText}>Home</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate("AdminDashboard")}
+        onPress={() => navigation.replace("AdminDashboard")}
         style={[styles.bottomBarButton, currentRoute === "AdminDashboard" && styles.activeButton]}
       >
         <Text style={currentRoute === "AdminDashboard" ? styles.activeText : styles.inactiveText}>Admin</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate("ProfilePage")}
+        onPress={() =>navigation.replace("ProfilePage")}
         style={[styles.bottomBarButton, currentRoute === "ProfilePage" && styles.activeButton]}
       >
         <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+            onPress={() => navigation.replace("Travel Status")}
+            style={[styles.bottomBarButton, currentRoute === "Travel Status" && styles.activeButton]}>
+            <Text style={currentRoute === "Travel Status" ? styles.activeText : styles.inactiveText}>Status</Text>
+          </TouchableOpacity>
     </View>
     </View>
   );

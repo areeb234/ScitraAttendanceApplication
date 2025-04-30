@@ -6,6 +6,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import OTPVerificationScreen from './src/screens/OTPScreen';
 import UserDashboard from './src/screens/Dashboard';
 import AdminDashboard from './src/screens/AdminDashboard';
+import StatusPage  from './src/screens/StatusPage';
 import ProfilePage from './src/screens/ProfilePage';
 
 import { View, ActivityIndicator } from 'react-native';
@@ -40,13 +41,30 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={initialRoute}>
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
-        <Stack.Screen name="UserDashboard" component={UserDashboard} />
-        <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-        <Stack.Screen name="ProfilePage" component={ProfilePage} />
-        </Stack.Navigator>
+<Stack.Navigator initialRouteName={initialRoute}>
+  <Stack.Screen name="Login" component={LoginScreen} />
+  <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
+  <Stack.Screen
+    name="UserDashboard"
+    component={UserDashboard}
+    options={{ headerLeft: () => null }}
+  />
+  <Stack.Screen
+    name="AdminDashboard"
+    component={AdminDashboard}
+    options={{ headerLeft: () => null }}
+  />
+  <Stack.Screen
+    name="ProfilePage"
+    component={ProfilePage}
+    options={{ headerLeft: () => null }}
+  />
+  <Stack.Screen
+    name="Travel Status"
+    component={StatusPage}
+    options={{ headerLeft: () => null }}
+  />
+</Stack.Navigator>
     </NavigationContainer>
   );
 };

@@ -106,16 +106,20 @@ const StatusPage = () => {
           onPress={() => navigation.replace("UserDashboard")}
           style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
         >
-          <Text style={currentRoute === "UserDashboard" ? styles.activeText : styles.inactiveText}>Home</Text>
+          <Text style={currentRoute === "UserDashboard" ? styles.activeText : styles.inactiveText}>Personal</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => navigation.replace("AdminDashboard")}
           style={[styles.bottomBarButton, currentRoute === "AdminDashboard" && styles.activeButton]}
         >
-          <Text style={currentRoute === "AdminDashboard" ? styles.activeText : styles.inactiveText}>Admin</Text>
+          <Text style={currentRoute === "AdminDashboard" ? styles.activeText : styles.inactiveText}>YTD Log</Text>
         </TouchableOpacity>
-
+        <TouchableOpacity
+          onPress={() => navigation.replace("Travel Status")}
+          style={[styles.bottomBarButton, currentRoute === "Travel Status" && styles.activeButton]}>
+          <Text style={currentRoute === "Travel Status" ? styles.activeText : styles.inactiveText}>Current</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.replace("ProfilePage")}
           style={[styles.bottomBarButton, currentRoute === "ProfilePage" && styles.activeButton]}
@@ -123,12 +127,7 @@ const StatusPage = () => {
           <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.replace("Travel Status")}
-          style={[styles.bottomBarButton, currentRoute === "Travel Status" && styles.activeButton]}
-        >
-          <Text style={currentRoute === "Travel Status" ? styles.activeText : styles.inactiveText}>Status</Text>
-        </TouchableOpacity>
+
       </View>
     </SafeAreaView>
   );

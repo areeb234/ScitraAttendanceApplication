@@ -147,14 +147,15 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Signup</Text>
-
+          
+            <Text style={styles.label}>Name</Text>
             <TextInput
               style={styles.input}
               placeholder="Name"
               value={signupName}
               onChangeText={setSignupName}
             />
-
+  <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -232,6 +233,14 @@ const styles = StyleSheet.create({
   signupButton: {
     marginTop: 15,
   },
+  label: {
+    alignSelf: 'flex-start',
+    marginBottom: 5,
+    marginTop: 10,
+    fontSize: 14,
+    color: '#333',
+  },
+  
   signupText: {
     color: '#007AFF',
     fontSize: 16,

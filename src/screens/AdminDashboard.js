@@ -29,6 +29,7 @@ const DashboardScreen = () => {
   const [siteOptions, setSiteOptions] = useState([]);
   /*Add Popup*/
 
+  
   /*Edit Popup*/
   const [editSite, setEditSite] = useState(selectedItem?.name || '');
   const [editStartDate, setEditStartDate] = useState(new Date(selectedItem?.startDate || new Date()));
@@ -40,8 +41,8 @@ const DashboardScreen = () => {
   // filter part
   const [filteredData, setFilteredData] = useState([]); // Filtered data for the table
   const [filterModalVisible, setFilterModalVisible] = useState(false); // Toggle filter dropdown
-  const usernameOptions = [...new Set(data.map((item) => item.username))];
-
+  const [filteredUsernameOptions, setFilteredUsernameOptions] = useState([]);
+  const [filteredSiteOptions, setFilteredSiteOptions] = useState([]);
   
   // Filter States
   const [filterUsername, setFilterUsername] = useState('');
@@ -50,15 +51,67 @@ const DashboardScreen = () => {
   const [filterEndDate, setFilterEndDate] = useState(null);
 
 
+
+  useEffect(() => {
+    let updatedUsernameOptions = data;
+    let updatedSiteOptions = data;
+  
+    if (filterSite) {
+      updatedUsernameOptions = data.filter(item => item.site === filterSite);
+    }
+  
+    if (filterUsername) {
+      updatedSiteOptions = data.filter(item => item.username === filterUsername);
+    }
+  
+    setFilteredUsernameOptions([...new Set(updatedUsernameOptions.map(item => item.username))]);
+    setFilteredSiteOptions([...new Set(updatedSiteOptions.map(item => item.site))]);
+  }, [filterUsername, filterSite, data]);
+  
 // Utility function to convert DD/MM/YYYY to YYYY-MM-DD
-const convertToISODate = (dateString) => {
-  const parts = dateString.split('/');
-  if (parts.length === 3) {
-    // Ensure it is in the format YYYY-MM-DD
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+const convertToISODate = (dateInput) => {
+  if (!dateInput) return null;
+
+  if (typeof dateInput === 'string') {
+    // Try parsing format: '01 May 2025'
+    const match = dateInput.match(/^(\d{2}) (\w{3,}) (\d{4})$/);
+    if (match) {
+      const [_, day, monthStr, year] = match;
+
+      // Convert month name to month number
+      const monthMap = {
+        January: 0, February: 1, March: 2, April: 3, May: 4, June: 5,
+        July: 6, August: 7, September: 8, October: 9, November: 10, December: 11
+      };
+
+      const month = monthMap[monthStr];
+      if (month === undefined) {
+        console.warn('Unrecognized month:', monthStr);
+        return null;
+      }
+
+      const parsedDate = new Date(Number(year), month, Number(day));
+      return parsedDate.toISOString().split('T')[0];
+    }
+
+    // Fallback: Try new Date() directly
+    const parsedFallback = new Date(dateInput);
+    if (!isNaN(parsedFallback)) {
+      return parsedFallback.toISOString().split('T')[0];
+    }
+
+    console.warn('Invalid date string format:', dateInput);
+    return null;
   }
-  return dateString; // Return the original date if it's already valid
+
+  if (dateInput instanceof Date) {
+    return dateInput.toISOString().split('T')[0];
+  }
+
+  console.warn('Unsupported date input:', dateInput);
+  return null;
 };
+
 
 const filterData = () => {
   let filtered = data;
@@ -76,44 +129,28 @@ const filterData = () => {
   }
 
   // Debugging start date filter with validation
-  if (filterStartDate) {
-    const parsedStartDate = new Date(convertToISODate(filterStartDate));
-    if (isNaN(parsedStartDate)) {
-      console.error("Invalid Filter Start Date:", filterStartDate);
-    } else {
-      console.log("Filter Start Date:", parsedStartDate.toISOString());
-    }
-
-    filtered = filtered.filter(item => {
-      const itemStartDate = new Date(convertToISODate(item.startDate));
-      if (isNaN(itemStartDate)) {
-        console.error("Invalid Item Start Date:", item.startDate);
-      } else {
-        console.log("Item Start Date:", itemStartDate.toISOString());
-      }
+  const parsedStartDate = filterStartDate ? new Date(convertToISODate(filterStartDate)) : null;
+  const parsedEndDate = filterEndDate ? new Date(convertToISODate(filterEndDate)) : null;
+  
+  filtered = filtered.filter(item => {
+    const itemStartDate = new Date(convertToISODate(item.startDate));
+    const itemEndDate = new Date(convertToISODate(item.endDate));
+  
+    if (parsedStartDate && !parsedEndDate) {
       return itemStartDate >= parsedStartDate;
-    });
-  }
-
-  if (filterEndDate) {
-    const parsedEndDate = new Date(convertToISODate(filterEndDate));
-    filtered = filtered.filter(item => {
-      const itemEndDate = new Date(convertToISODate(item.endDate));
+    }
+  
+    if (!parsedStartDate && parsedEndDate) {
       return itemEndDate <= parsedEndDate;
-    });
-  }
-
-  // If both start and end dates are selected, filter by both
-  if (filterStartDate && filterEndDate) {
-    const parsedStartDate = new Date(convertToISODate(filterStartDate));
-    const parsedEndDate = new Date(convertToISODate(filterEndDate));
-    filtered = filtered.filter(item => {
-      const itemStartDate = new Date(convertToISODate(item.startDate));
-      const itemEndDate = new Date(convertToISODate(item.endDate));
+    }
+  
+    if (parsedStartDate && parsedEndDate) {
       return itemStartDate >= parsedStartDate && itemEndDate <= parsedEndDate;
-    });
-  }
-
+    }
+  
+    return true; // No date filters applied
+  });
+  
   setFilteredData(filtered);
   setFilterModalVisible(false); // Close filter dropdown after applying
   console.log("Filtered data:", filtered);
@@ -172,7 +209,7 @@ const filterData = () => {
           onPress={() => setShowDropdown(true)}
         >
           <Text style={styles.dropdownText}>
-            {selectedValue ? selectedValue : "Select Site"}
+            {selectedValue ? selectedValue : "Select"}
           </Text>
         </TouchableOpacity>
 
@@ -396,7 +433,7 @@ const filterData = () => {
             {/* Username Filter */}
             <Text>Filter by Username:</Text>
             <CustomDropdown
-              options={usernameOptions}
+              options={filteredUsernameOptions}
               selectedValue={filterUsername}
               onSelect={setFilterUsername}
             />
@@ -404,7 +441,7 @@ const filterData = () => {
             {/* Site Filter */}
             <Text>Filter by Site:</Text>
             <CustomDropdown
-              options={siteOptions}
+              options={filteredSiteOptions}
               selectedValue={filterSite}
               onSelect={setFilterSite}
             />

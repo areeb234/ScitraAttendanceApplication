@@ -5,6 +5,7 @@ import styles from '../../styles/dashboardstyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // Update the import
 import {useNavigation, useRoute} from "@react-navigation/native";
+import { SafeAreaView, Platform, Dimensions, StatusBar } from 'react-native';
 
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
@@ -287,7 +288,7 @@ const DashboardScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
 
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome, {username}</Text>
@@ -522,7 +523,7 @@ const DashboardScreen = () => {
         </TouchableOpacity>
 
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

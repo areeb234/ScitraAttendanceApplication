@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderColor: "#ddd",
-    position: "absolute",
+    position: "relative",
     bottom: 0,
     width: "100vh",
     left: 0,  // Ensure it starts from the left

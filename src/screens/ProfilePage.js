@@ -3,6 +3,8 @@ import { View, Text, FlatList, TouchableOpacity, Modal, ActivityIndicator } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/profilestyles';
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
 
@@ -75,7 +77,7 @@ const ProfilePage = () => {
   
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Profile</Text>
       <View style={styles.infoContainer}>
         <Text style={styles.label}>Username:</Text>
@@ -180,7 +182,7 @@ const ProfilePage = () => {
         </TouchableOpacity>
        
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

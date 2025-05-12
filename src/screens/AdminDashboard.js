@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/dashboardstyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {useNavigation, useRoute} from "@react-navigation/native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
@@ -413,7 +414,7 @@ const filterData = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
 
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome Admin</Text>
@@ -690,7 +691,7 @@ const filterData = () => {
       </TouchableOpacity>
       
     </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

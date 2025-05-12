@@ -238,11 +238,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around", // Ensures even spacing
     alignItems: "center",
+    bottom: Platform.OS === 'android' ? 20 : 0, // Push up from Android nav
     paddingVertical: 18,
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderColor: "#ddd",
-    position: "relative",
+    position: "absolute",
     bottom: 0,
     width: "100vh",
     left: 0,  // Ensure it starts from the left

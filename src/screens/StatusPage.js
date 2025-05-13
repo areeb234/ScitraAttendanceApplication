@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../../styles/statusstyles'; // Import your base styles
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
 
@@ -30,7 +31,7 @@ const StatusPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'fetchstatus' }),
       });
-  
+
       const result = await response.json();
       if (result.status === 'success') {
         const formattedData = result.logs.map((item, index) => {
@@ -45,12 +46,12 @@ const StatusPage = () => {
             date2: item.toDate && !isNaN(new Date(item.toDate)) ? formatDate(item.toDate) : '',
           };
         });
-  
+
         // Sort: items with different locations first
         const sortedData = formattedData.sort((a, b) => {
           return a.sameLocation === b.sameLocation ? 0 : a.sameLocation ? 1 : -1;
         });
-  
+
         setStatusData(sortedData);
       } else {
         console.error('Failed to fetch status data:', result.message);
@@ -61,7 +62,7 @@ const StatusPage = () => {
       setLoading(false);
     }
   };
-  
+
 
   useEffect(() => {
     fetchStatusData();
@@ -88,7 +89,7 @@ const StatusPage = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
@@ -101,7 +102,7 @@ const StatusPage = () => {
       )}
 
       {/* Bottom Navigation Bar */}
-      <View style={styles.bottomBar}>
+      <SafeAreaView style={styles.bottomBar}>
         <TouchableOpacity
           onPress={() => navigation.replace("UserDashboard")}
           style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
@@ -128,8 +129,8 @@ const StatusPage = () => {
         </TouchableOpacity>
 
 
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 

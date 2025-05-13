@@ -5,7 +5,8 @@ import styles from '../../styles/dashboardstyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // Update the import
 import {useNavigation, useRoute} from "@react-navigation/native";
-import { SafeAreaView, Platform, Dimensions, StatusBar } from 'react-native';
+import {Platform, Dimensions, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxphMskRAVLWG5gfRCeHxwyoWgAV7GjecUMq4hygR9s5zPmD5W2Vvsl1sJ37TbMcNY/exec';
@@ -288,7 +289,7 @@ const DashboardScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
 
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome, {username}</Text>
@@ -303,7 +304,7 @@ const DashboardScreen = () => {
         <Text style={styles.plusButtonText}>+</Text>
       </TouchableOpacity>
 
-      
+
 
       <View style={styles.tableContainer}>
 
@@ -312,7 +313,7 @@ const DashboardScreen = () => {
           <Text style={styles.headerCell}>Start Date</Text>
           <Text style={styles.headerCell}>End Date</Text>
         </View>
-        
+
         {loading ? (
   <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
 ) : (
@@ -496,7 +497,7 @@ const DashboardScreen = () => {
         </View>
       </Modal>
 
-      <View style={styles.bottomBar}>
+      <SafeAreaView style={styles.bottomBar}>
         <TouchableOpacity
           onPress={() => navigation.replace("UserDashboard")}
           style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
@@ -522,8 +523,8 @@ const DashboardScreen = () => {
           <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
         </TouchableOpacity>
 
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 

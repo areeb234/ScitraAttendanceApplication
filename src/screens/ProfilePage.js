@@ -45,7 +45,7 @@ const ProfilePage = () => {
     console.log(email)
     try {
       setIsDeleting(true);
-  
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -56,8 +56,8 @@ const ProfilePage = () => {
           email: email,
         }),
       });
-  
-     
+
+
 
       const result = await response.json();
 
@@ -74,10 +74,10 @@ const ProfilePage = () => {
       setIsDeleting(false);
     }
   };
-  
+
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
       <View style={styles.infoContainer}>
         <Text style={styles.label}>Username:</Text>
@@ -89,8 +89,8 @@ const ProfilePage = () => {
       </View>
 
       {/* Log Out Button */}
-      <TouchableOpacity 
-        style={styles.logoutButton} 
+      <TouchableOpacity
+        style={styles.logoutButton}
         onPress={async () => {
           try {
             await clearAsyncStorage();
@@ -153,7 +153,7 @@ const ProfilePage = () => {
       </Modal>
 
       {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
+      <SafeAreaView style={styles.bottomBar}>
         <TouchableOpacity
           onPress={() => navigation.navigate("UserDashboard")}
           style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
@@ -180,9 +180,9 @@ const ProfilePage = () => {
         >
           <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
         </TouchableOpacity>
-       
-      </View>
-    </SafeAreaView>
+
+      </SafeAreaView>
+    </View>
   );
 };
 

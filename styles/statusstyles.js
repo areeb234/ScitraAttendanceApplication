@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 2,
       },
-      
+
     name: {
       fontSize: 18,
       fontWeight: '600',
@@ -37,23 +37,23 @@ const styles = StyleSheet.create({
       color: '#888',
     },
 
-    bottomBar: {
+  bottomBar: {
     flexDirection: "row",
-    bottom: Platform.OS === 'android' ? 20 : 0, // Push up from Android nav
     justifyContent: "space-around", // Ensures even spacing
     alignItems: "center",
-    paddingVertical: 18,
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderColor: "#ddd",
     position: "absolute",
+    paddingBottom: Platform.OS === 'android' ? 0 : 8, // adaptively pad
     bottom: 0,
     width: "100vh",
     left: 0,  // Ensure it starts from the left
     right: 0, // Ensure it stretches to the right
   },
-bottomBarButton: {
-      bottom : 10,
+
+
+    bottomBarButton: {
       flex: 1,  // Remove if you don't want to stretch the button
       justifyContent: "center",
       alignItems: "center",

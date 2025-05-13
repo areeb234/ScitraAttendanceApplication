@@ -30,21 +30,21 @@ const DashboardScreen = () => {
   const [siteOptions, setSiteOptions] = useState([]);
   /*Add Popup*/
 
-  
+
   /*Edit Popup*/
   const [editSite, setEditSite] = useState(selectedItem?.name || '');
   const [editStartDate, setEditStartDate] = useState(new Date(selectedItem?.startDate || new Date()));
   const [editEndDate, setEditEndDate] = useState(new Date(selectedItem?.endDate || new Date()));
   const [showEditStartPicker, setShowEditStartPicker] = useState(false);
   const [showEditEndPicker, setShowEditEndPicker] = useState(false);
-  /*Edit Popup*/  
+  /*Edit Popup*/
 
   // filter part
   const [filteredData, setFilteredData] = useState([]); // Filtered data for the table
   const [filterModalVisible, setFilterModalVisible] = useState(false); // Toggle filter dropdown
   const [filteredUsernameOptions, setFilteredUsernameOptions] = useState([]);
   const [filteredSiteOptions, setFilteredSiteOptions] = useState([]);
-  
+
   // Filter States
   const [filterUsername, setFilterUsername] = useState('');
   const [filterSite, setFilterSite] = useState('');
@@ -56,19 +56,19 @@ const DashboardScreen = () => {
   useEffect(() => {
     let updatedUsernameOptions = data;
     let updatedSiteOptions = data;
-  
+
     if (filterSite) {
       updatedUsernameOptions = data.filter(item => item.site === filterSite);
     }
-  
+
     if (filterUsername) {
       updatedSiteOptions = data.filter(item => item.username === filterUsername);
     }
-  
+
     setFilteredUsernameOptions([...new Set(updatedUsernameOptions.map(item => item.username))]);
     setFilteredSiteOptions([...new Set(updatedSiteOptions.map(item => item.site))]);
   }, [filterUsername, filterSite, data]);
-  
+
 // Utility function to convert DD/MM/YYYY to YYYY-MM-DD
 const convertToISODate = (dateInput) => {
   if (!dateInput) return null;
@@ -132,33 +132,33 @@ const filterData = () => {
   // Debugging start date filter with validation
   const parsedStartDate = filterStartDate ? new Date(convertToISODate(filterStartDate)) : null;
   const parsedEndDate = filterEndDate ? new Date(convertToISODate(filterEndDate)) : null;
-  
+
   filtered = filtered.filter(item => {
     const itemStartDate = new Date(convertToISODate(item.startDate));
     const itemEndDate = new Date(convertToISODate(item.endDate));
-  
+
     if (parsedStartDate && !parsedEndDate) {
       return itemStartDate >= parsedStartDate;
     }
-  
+
     if (!parsedStartDate && parsedEndDate) {
       return itemEndDate <= parsedEndDate;
     }
-  
+
     if (parsedStartDate && parsedEndDate) {
       return itemStartDate >= parsedStartDate && itemEndDate <= parsedEndDate;
     }
-  
+
     return true; // No date filters applied
   });
-  
+
   setFilteredData(filtered);
   setFilterModalVisible(false); // Close filter dropdown after applying
   console.log("Filtered data:", filtered);
 };
 
-  
-  
+
+
 
   // Load data into filteredData initially
   useEffect(() => {
@@ -303,7 +303,7 @@ const filterData = () => {
       setLoading(false); // Stop loading
     }
   };
-  
+
 
   // const fetchSites = async () => {
   //   setLoading(true);
@@ -414,13 +414,13 @@ const filterData = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
 
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome Admin</Text>
       </View>
-      <TouchableOpacity 
-        style={{ backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginBottom: 10 }} 
+      <TouchableOpacity
+        style={{ backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginBottom: 10 }}
         onPress={() => setFilterModalVisible(true)}
       >
         <Text style={{ color: '#fff', textAlign: 'center' }}>Filter</Text>
@@ -664,7 +664,7 @@ const filterData = () => {
           </View>
         </View>
       </Modal>
-      <View style={styles.bottomBar}>
+      <SafeAreaView style={styles.bottomBar}>
       <TouchableOpacity
         onPress={() => navigation.replace("UserDashboard")}
         style={[styles.bottomBarButton, currentRoute === "UserDashboard" && styles.activeButton]}
@@ -689,9 +689,9 @@ const filterData = () => {
       >
         <Text style={currentRoute === "ProfilePage" ? styles.activeText : styles.inactiveText}>Profile</Text>
       </TouchableOpacity>
-      
-    </View>
+
     </SafeAreaView>
+    </View>
   );
 };
 

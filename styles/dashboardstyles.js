@@ -1,4 +1,6 @@
 import { StyleSheet } from 'react-native';
+import { Platform, StatusBar, Dimensions } from 'react-native';
+
 
 const styles = StyleSheet.create({
   container: {
@@ -23,7 +25,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 14,
-    paddingHorizontal: 5, 
+    paddingHorizontal: 5,
   },
   tableContainer: {
     marginTop: 20,
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#28a745',
     color: '#fff',
   },
-  
+
   closeButtonLeft: {
     backgroundColor: '#dc3545',
     color: '#fff',
@@ -201,7 +203,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 15,
   },
-  
+
   dropdownContainer1: {
     position: 'absolute',
     top: '30%',
@@ -213,7 +215,7 @@ const styles = StyleSheet.create({
     elevation: 10,
     maxHeight: '50%',
   },
-  
+
   dropdownText: {
     textAlign: "center",
   },
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  
+
   itemText: {
     fontSize: 16,
     textAlign: 'left',
@@ -238,12 +240,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around", // Ensures even spacing
     alignItems: "center",
-    bottom: Platform.OS === 'android' ? 20 : 0, // Push up from Android nav
-    paddingVertical: 18,
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderColor: "#ddd",
     position: "absolute",
+    paddingBottom: Platform.OS === 'android' ? 0 : 8, // adaptively pad
     bottom: 0,
     width: "100vh",
     left: 0,  // Ensure it starts from the left
@@ -252,7 +253,6 @@ const styles = StyleSheet.create({
 
 
     bottomBarButton: {
-      bottom : 10,
       flex: 1,  // Remove if you don't want to stretch the button
       justifyContent: "center",
       alignItems: "center",
@@ -276,6 +276,6 @@ const styles = StyleSheet.create({
     width: 'auto', // Allow width to adjust based on content
   },
 
-  
+
 });
 export default styles;

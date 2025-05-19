@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
       color: '#888',
     },
 
-  bottomBar: {
+bottomBar: {
     flexDirection: "row",
     justifyContent: "space-around", // Ensures even spacing
     alignItems: "center",
@@ -60,7 +60,9 @@ const styles = StyleSheet.create({
       paddingVertical: 6,  // Control padding on all sides
     },
 
-bottomBarText: {
+
+
+    bottomBarText: {
     fontSize: 14,
     color: "#333",
   },

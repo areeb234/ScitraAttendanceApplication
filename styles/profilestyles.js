@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { Platform, StatusBar, Dimensions } from 'react-native';
 
 
 const styles = StyleSheet.create({
@@ -55,7 +54,7 @@ const styles = StyleSheet.create({
       fontSize: 16,
       fontWeight: 'bold',
     },
-  bottomBar: {
+bottomBar: {
     flexDirection: "row",
     justifyContent: "space-around", // Ensures even spacing
     alignItems: "center",
@@ -63,7 +62,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: "#ddd",
     position: "absolute",
-
     paddingBottom: Platform.OS === 'android' ? 0 : 8, // adaptively pad
     bottom: 0,
     width: "100vh",
@@ -78,11 +76,13 @@ const styles = StyleSheet.create({
       alignItems: "center",
       paddingVertical: 6,  // Control padding on all sides
     },
-        bottomBarText: {
-        fontSize: 14,
-        color: "#333",
-      },
 
+
+
+    bottomBarText: {
+    fontSize: 14,
+    color: "#333",
+  },
       activeButton: {
         backgroundColor: "#ddd",  // Highlight color for the active button
         borderRadius: 10,

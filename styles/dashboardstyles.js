@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   tableContainer: {
+    paddingBottom: 100, // or whatever matches your bottom bar height
     marginTop: 20,
     borderWidth: 1,
     borderColor: '#ccc',
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     color: '#333',
   },
-  bottomBar: {
+bottomBar: {
     flexDirection: "row",
     justifyContent: "space-around", // Ensures even spacing
     alignItems: "center",
@@ -265,7 +266,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
   },
-
   activeButton: {
     backgroundColor: "#ddd",  // Highlight color for the active button
     borderRadius: 10,

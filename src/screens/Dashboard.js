@@ -5,7 +5,6 @@ import styles from '../../styles/dashboardstyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // Update the import
 import {useNavigation, useRoute} from "@react-navigation/native";
-import {Platform, Dimensions, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -319,6 +318,7 @@ const DashboardScreen = () => {
 ) : (
 
         <FlatList
+        contentContainerStyle={{ paddingBottom: 200 }}
           data={data}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({item}) => (

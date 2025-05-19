@@ -523,6 +523,7 @@ const filterData = () => {
   <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
       ) : (
         <FlatList
+        contentContainerStyle={{ paddingBottom: 200 }}
           data={filteredData}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({item}) => (
